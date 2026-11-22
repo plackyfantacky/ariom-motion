@@ -64,6 +64,12 @@ export function createArrowCloudEditor({
         cameraFrustumVisible: preferences.get("cameraFrustumVisible"),
     });
 
+    const savedCameraMode = preferences.get("cameraMode");
+
+    if (["tracked", "orbital", "fly"].includes(savedCameraMode)) {
+        cameraController.setMode(savedCameraMode);
+    }
+
     cameraController.setViewPresetChangeHandler(() => {
         cameraControls.updateCameraViewButtons();
     });
@@ -90,14 +96,17 @@ export function createArrowCloudEditor({
 
         onCameraModeChange(cameraMode) {
             cameraController.setMode(cameraMode);
+            preferences.set("cameraMode", cameraController.getMode());
         },
 
         onCameraViewChange(presetName) {
             cameraController.setViewPreset(presetName);
+            preferences.set("cameraMode", cameraController.getMode());
         },
 
         onResetCamera() {
             cameraController.reset();
+            preferences.set("cameraMode", cameraController.getMode());
         },
 
         onCopyCamera() {
@@ -251,7 +260,6 @@ export function createArrowCloudEditor({
 
     //helpers
 
-    
     function createUIVisibilityToggle() {
         const element = document.createElement("label");
         element.className = "editor-ui-toggle editor-panel ui";
