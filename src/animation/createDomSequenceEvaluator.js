@@ -19,19 +19,11 @@ export function createDomSequenceEvaluator(object, sequence, sequenceName) {
         const translation = keyframe.translate ?? previousTranslation;
         const opacity = keyframe.opacity ?? previousOpacity;
 
-        if (
-            !Array.isArray(translation) ||
-            translation.length !== 2 ||
-            !translation.every(Number.isFinite)
-        ) {
+        if (!Array.isArray(translation) || translation.length !== 2 || !translation.every(Number.isFinite)) {
             throw new Error(`Invalid translation in "${sequenceName}"`);
         }
 
-        if (
-            !Number.isFinite(opacity) ||
-            opacity < 0 ||
-            opacity > 1
-        ) {
+        if (!Number.isFinite(opacity) || opacity < 0 || opacity > 1) {
             throw new Error(`Invalid opacity in "${sequenceName}"`);
         }
 
@@ -62,13 +54,8 @@ export function createDomSequenceEvaluator(object, sequence, sequenceName) {
         }
 
         if (animatesOpacity) {
-            const opacity = String(
-                previousFrame.opacity + (nextFrame.opacity - previousFrame.opacity) * amount,
-            );
-
-            if (element.style.opacity !== opacity) {
-                element.style.opacity = opacity;
-            }
+            const opacity = previousFrame.opacity + (nextFrame.opacity - previousFrame.opacity) * amount;
+            object.userData.setOpacity(opacity);
         }
     }
 
