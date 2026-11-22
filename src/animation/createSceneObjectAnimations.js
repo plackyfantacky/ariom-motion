@@ -363,11 +363,14 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                     layer.scrollPlayback = null;
                 }
 
+                const isBeforeTrigger = binding.direction === "up" ? scrollPosition > start : scrollPosition <= start;
+                const shouldReset = !binding.reverseOnReturn && binding.direction !== "both" && isBeforeTrigger;
+
                 if (binding.mode === "scrub" && !layer.scrollPlayback) {
                     const end = binding.end * unitSize;
                     binding.seek((scrollPosition - start) / (end - start));
-                } else if (binding.mode === "play" && (selectionChanged || (!binding.reverseOnReturn && scrollPosition < start))) {
-                    binding.seek(scrollPosition <= start ? 0 : 1);
+                } else if (binding.mode === "play" && (selectionChanged || shouldReset)) {
+                    binding.seek(isBeforeTrigger ? 0 : 1);
                 }
 
                 const triggerCanTakeControl = triggeredBinding && (!movingDown || triggeredBinding === binding);
