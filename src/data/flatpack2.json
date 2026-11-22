@@ -367,7 +367,8 @@
                         "unit": "vh",
                         "mode": "play",
                         "direction": "down",
-                        "once": false
+                        "once": false,
+                        "reverseOnReturn": true
                     }
                 },
                 "exit": {

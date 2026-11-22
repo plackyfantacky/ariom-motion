@@ -1,6 +1,7 @@
 import { createObjectSequenceEvaluator } from "./createObjectSequenceEvaluator.js";
 import { createDomSequenceEvaluator } from "./createDomSequenceEvaluator.js";
 import { resolveAnimationBindings } from "./resolveAnimationBindings.js";
+import { createSequenceClock } from "./createSequenceClock.js";
 
 export function createSceneObjectAnimations(sceneObjects, sequences = {}, events) {
     const controllers = [];
@@ -61,28 +62,57 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 : createObjectSequenceEvaluator(object, sequence, binding.play, target);
 
             const duration = evaluator.duration;
+            const clock = createSequenceClock(duration, binding.loop);
 
             let idleStartTime = null;
-            let activationTime = null;
-            let activationPending = false;
+            let isAutonomous = false;
             let seekProgress = null;
+            let playbackDirection = 1;
 
             function activate() {
                 layer.activeBinding = bindingName;
                 layer.scrollPlayback = null;
+
+                clock.restart();
+
+                playbackDirection = 1;
                 seekProgress = null;
-                activationPending = true;
+                isAutonomous = true;
+                idleStartTime = null;
+
+                object.userData.idleMotion?.update(0);
+            }
+
+            function setDirection(direction) {
+                layer.activeBinding = bindingName;
+                layer.scrollPlayback = null;
+
+                clock.setDirection(direction);
+                clock.seek(clock.getProgress());
+
+                playbackDirection = direction;
+                seekProgress = null;
+                isAutonomous = true;
+                idleStartTime = null;
+
+                object.userData.idleMotion?.update(0);
             }
 
             objectActivations.set(bindingName, {
                 play: activate,
+                setDirection,
 
                 seek(progress) {
                     layer.activeBinding = bindingName;
                     layer.scrollPlayback = null;
+
                     seekProgress = Math.max(0, Math.min(1, progress));
-                    activationPending = false;
-                    activationTime = null;
+
+                    clock.seek(seekProgress);
+                    clock.setDirection(1);
+
+                    playbackDirection = 1;
+                    isAutonomous = false;
                     idleStartTime = null;
                 },
             });
@@ -98,39 +128,36 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                         return;
                     }
 
-                    if (activationPending) {
-                        activationPending = false;
-                        activationTime = ambientTime;
-                        idleStartTime = null;
-
-                        object.userData.idleMotion?.update(0);
+                    if (binding.loop && hasAt && !isAutonomous && currentTime >= binding.at) {
+                        clock.restart();
+                        playbackDirection = 1;
+                        isAutonomous = true;
                     }
 
-                    if (binding.loop && hasAt && activationTime === null && currentTime >= binding.at) {
-                        activationTime = ambientTime;
-                    }
+                    let progress;
 
-                    let elapsedTime;
-
-                    if (activationTime !== null) {
-                        elapsedTime = ambientTime - activationTime;
+                    if (isAutonomous) {
+                        progress = clock.update(ambientTime);
                     } else if (hasAt) {
-                        elapsedTime = currentTime - binding.at;
+                        progress = Math.max(0, Math.min(1, (currentTime - binding.at) / duration));
+
+                        clock.seek(progress);
                     } else {
                         return;
                     }
 
-                    const elapsed = Math.max(0, elapsedTime);
-                    const progress = binding.loop ? (elapsed % duration) / duration : Math.min(1, elapsed / duration);
-
                     evaluator.apply(progress);
 
-                    if (progress === 1 && idleStartTime === null) {
-                        idleStartTime = ambientTime;
-                    }
+                    const hasFinished = !binding.loop && (playbackDirection === 1 ? progress === 1 : progress === 0);
 
-                    if (idleStartTime !== null) {
+                    if (hasFinished) {
+                        if (idleStartTime === null) {
+                            idleStartTime = ambientTime;
+                        }
+
                         object.userData.idleMotion?.update(ambientTime - idleStartTime);
+                    } else {
+                        idleStartTime = null;
                     }
                 },
             };
@@ -157,6 +184,8 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                     hasPlayed: false,
                     play: activate,
                     seek: objectActivations.get(bindingName).seek,
+                    reverseOnReturn: binding.scroll.reverseOnReturn ?? false,
+                    setDirection: objectActivations.get(bindingName).setDirection,
                 });
             }
         });
@@ -238,6 +267,22 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             activation.seek(progress);
             return true;
         },
+        setDirection(objectId, bindingName, direction) {
+            const activation = activations.get(objectId)?.get(bindingName);
+
+            if (!activation) {
+                console.warn(`Unknown animation binding: ${objectId}.${bindingName}`);
+                return false;
+            }
+
+            if (direction !== 1 && direction !== -1) {
+                console.warn("Animation direction must be 1 or -1.");
+                return false;
+            }
+
+            activation.setDirection(direction);
+            return true;
+        },
         update(currentTime, ambientTime) {
             controllers.forEach((controller) => {
                 controller.update(currentTime, ambientTime);
@@ -255,6 +300,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 let activeStart = -Infinity;
 
                 let triggeredBinding = null;
+                let triggeredDirection = 1;
                 let triggeredStart = movingDown ? -Infinity : Infinity;
 
                 if (!isScrolling && layer.scrollPlayback) {
@@ -276,7 +322,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                         activeStart = start;
                     }
 
-                    if (binding.mode !== "play" || !isScrolling || !hasMoved || (binding.once && binding.hasPlayed)) {
+                    if (binding.mode !== "play" || !isScrolling || !hasMoved) {
                         return;
                     }
 
@@ -287,13 +333,25 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
                     const matchesDirection = (crossedDown && binding.direction !== "up") || (crossedUp && binding.direction !== "down");
 
-                    if (!matchesDirection) {
+                    const isReturnCrossing =
+                        binding.reverseOnReturn && ((binding.direction === "down" && crossedUp) || (binding.direction === "up" && crossedDown));
+
+                    if (!matchesDirection && !isReturnCrossing) {
+                        return;
+                    }
+
+                    if (isReturnCrossing && !binding.hasPlayed) {
+                        return;
+                    }
+
+                    if (!isReturnCrossing && binding.once && binding.hasPlayed) {
                         return;
                     }
 
                     if (!triggeredBinding || (movingDown && start >= triggeredStart) || (!movingDown && start <= triggeredStart)) {
                         triggeredBinding = binding;
                         triggeredStart = start;
+                        triggeredDirection = isReturnCrossing ? -1 : 1;
                     }
                 });
 
@@ -311,15 +369,23 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 if (binding.mode === "scrub" && !layer.scrollPlayback) {
                     const end = binding.end * unitSize;
                     binding.seek((scrollPosition - start) / (end - start));
-                } else if (binding.mode === "play" && (selectionChanged || scrollPosition < start)) {
+                } else if (binding.mode === "play" && (selectionChanged || (!binding.reverseOnReturn && scrollPosition < start))) {
                     binding.seek(scrollPosition <= start ? 0 : 1);
                 }
 
                 const triggerCanTakeControl = triggeredBinding && (!movingDown || triggeredBinding === binding);
 
                 if (triggerCanTakeControl) {
-                    triggeredBinding.play();
-                    triggeredBinding.hasPlayed = true;
+                    if (triggeredBinding.reverseOnReturn) {
+                        triggeredBinding.setDirection(triggeredDirection);
+                    } else {
+                        triggeredBinding.play();
+                    }
+
+                    if (triggeredDirection === 1) {
+                        triggeredBinding.hasPlayed = true;
+                    }
+
                     layer.scrollPlayback = triggeredBinding;
                 }
             });

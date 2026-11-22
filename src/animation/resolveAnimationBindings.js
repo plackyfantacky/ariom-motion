@@ -54,6 +54,14 @@ export function resolveAnimationBindings(definitions = {}, objectId) {
                     throw new Error(`Animation "${identifier}" requires scroll direction ` + '"down", "up", or "both".');
                 }
 
+                if (scroll.reverseOnReturn !== undefined && typeof scroll.reverseOnReturn !== "boolean") {
+                    throw new Error(`Animation "${identifier}" requires a boolean "reverseOnReturn".`);
+                }
+
+                if (scroll.reverseOnReturn && direction === "both") {
+                    throw new Error(`Animation "${identifier}" requires direction "down" or "up" ` + 'when "reverseOnReturn" is enabled.');
+                }
+
                 if (scroll.once !== undefined && typeof scroll.once !== "boolean") {
                     throw new Error(`Animation "${identifier}" requires a boolean scroll "once".`);
                 }

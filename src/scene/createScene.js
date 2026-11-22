@@ -367,6 +367,7 @@ export function createScene(mountElement, options = {}) {
         
         playAnimation: objectAnimations.play,
         seekAnimation: objectAnimations.seek,
+        setAnimationDirection: objectAnimations.setDirection,
 
         resize: handleResize,
         destroy,
