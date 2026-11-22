@@ -354,6 +354,21 @@
                     }
                 }
             }
+        },
+        {
+            "id": "intro-content",
+            "type" : "dom",
+            "element": "portfolio-intro",
+            "animation": {
+                "enter": {
+                    "play": "content-enter",
+                    "scroll": {
+                        "start": 0,
+                        "end": 100,
+                        "unit": "vh"
+                    }
+                }
+            }
         }
     ],
     "sequences": {
@@ -428,6 +443,21 @@
                     "projection": {
                         "perspective": 1
                     }
+                }
+            ]
+        },
+        "content-enter": {
+            "duration": 1,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "translate": [0, 80],
+                    "opacity": 0
+                },
+                {
+                    "time": 1,
+                    "translate": [0, 0],
+                    "opacity": 1
                 }
             ]
         }

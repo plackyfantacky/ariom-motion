@@ -222,7 +222,7 @@ export function createScene(mountElement, options = {}) {
 
     function handleScroll() {
         objectAnimations.updateScroll(
-            window.screenY,
+            window.scrollY,
             window.innerHeight,
         );
     }
@@ -279,6 +279,11 @@ export function createScene(mountElement, options = {}) {
 
         objectInteractions.destroy();
         objectAnimations.destroy();
+
+        sceneObjects.forEach((object) => {
+            object.userData.destroy?.();
+        });
+        
         sceneObjects.clear();
         renderer.dispose();
 

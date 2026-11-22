@@ -1,4 +1,5 @@
 import { createObjectSequenceEvaluator } from "./createObjectSequenceEvaluator.js";
+import { createDomSequenceEvaluator } from "./createDomSequenceEvaluator.js";
 import { resolveAnimationBindings } from "./resolveAnimationBindings.js";
 
 export function createSceneObjectAnimations(sceneObjects, sequences = {}, events) {
@@ -31,6 +32,12 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 throw new Error(`Unknown animation layer: ${layerName}`);
             }
 
+            const isDomObject = object.userData.type === "dom";
+
+            if (isDomObject && layerName !== "primary") {
+                throw new Error("DOM animations currently support the primary layer only.");
+            }
+
             if (layerName === "additive" && sequence.rotationSpace !== "local") {
                 throw new Error("Additive animation requires local rotation space.");
             }
@@ -46,7 +53,9 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             const layer = layers.get(layerName);
             const target = layerName === "additive" ? object.userData.motionGroup : object.userData.poseGroup;
 
-            const evaluator = createObjectSequenceEvaluator(object, sequence, binding.play, target);
+            const evaluator = isDomObject
+                ? createDomSequenceEvaluator(object, sequence, binding.play)
+                : createObjectSequenceEvaluator(object, sequence, binding.play, target);
 
             const duration = evaluator.duration;
 
@@ -222,9 +231,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
         },
         updateScroll(scrollPosition, viewportHeight) {
             scrollBindings.forEach((binding) => {
-                const unitSize = binding.unit === "vh"
-                    ? viewportHeight / 100
-                    : 1;
+                const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
                 const start = binding.start * unitSize;
                 const end = binding.end * unitSize;
                 const progress = (scrollPosition - start) / (end - start);

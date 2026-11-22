@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import { applyObjectProjection } from "../shaders/applyObjectProjection.js";
 
+import { createDomObject } from "./createDomObject.js";
 import { createGeometry } from "../primitives/geometry/createGeometry.js";
 import { createIdleMotion } from "../animation/createIdleMotion.js";
 
@@ -17,6 +18,16 @@ export function createSceneObjects(scene, definitions = []) {
 
         if (objectsById.has(definition.id)) {
             throw new Error(`Duplicate scene object id: ${definition.id}`);
+        }
+
+        if (definition.type === "dom") {
+            const object = createDomObject(definition);
+
+            if (object) {
+                objectsById.set(definition.id, object);
+            }
+
+            return;
         }
 
         if (definition.type !== "mesh") {
@@ -68,7 +79,7 @@ export function createSceneObjects(scene, definitions = []) {
 
         mesh.userData.poseGroup = poseGroup;
         mesh.userData.motionGroup = motionGroup;
-        
+
         mesh.userData.animation = definition.animation ?? {};
         mesh.userData.interactions = definition.interactions ?? {};
 

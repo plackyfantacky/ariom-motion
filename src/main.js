@@ -70,7 +70,6 @@ async function initialise() {
         () => {
             editorAttachment?.destroy();
             unsubscribeNavigate();
-            window.removeEventListener("scroll", handleScroll);
             runtime.destroy();
         },
         { once: true },

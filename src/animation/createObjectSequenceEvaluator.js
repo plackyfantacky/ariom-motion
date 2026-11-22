@@ -1,36 +1,19 @@
 import * as THREE from "three";
 
+import { createSequenceSampler } from "./createSequenceSampler.js";
+
 export function createObjectSequenceEvaluator(object, sequence, sequenceName, target = object.userData.poseGroup) {
+    const sampler = createSequenceSampler(sequence, sequenceName);
     const keyframes = sequence.keyframes;
-
-    if (!Array.isArray(keyframes) || keyframes.length < 2) {
-        throw new Error(`Sequence "${sequenceName}" requires at least two keyframes.`);
-    }
-
+    const duration = sampler.duration;
     const rotationSpace = sequence.rotationSpace;
+
+    if (!["world", "local"].includes(rotationSpace)) {
+        throw new Error(`Sequence "${sequenceName}" requires rotationSpace "world" or "local".`);
+    }
 
     const animatesProjection = keyframes.some((keyframe) => {
         return keyframe.projection?.perspective !== undefined;
-    });
-
-    const duration = sequence.duration ?? keyframes[keyframes.length - 1].time;
-
-    if (
-        !Number.isFinite(duration) ||
-        duration <= 0 ||
-        !["world", "local"].includes(rotationSpace) ||
-        keyframes[0].time !== 0 ||
-        keyframes[keyframes.length - 1].time !== duration
-    ) {
-        throw new Error(
-            `Sequence "${sequenceName}" requires a positive duration, ` + 'rotationSpace: "world" or "local", and keyframes spanning its duration.',
-        );
-    }
-
-    keyframes.forEach((keyframe, index) => {
-        if (!Number.isFinite(keyframe.time) || (index > 0 && keyframe.time <= keyframes[index - 1].time)) {
-            throw new Error(`Keyframe times must increase in "${sequenceName}".`);
-        }
     });
 
     const poseGroup = target;
@@ -112,19 +95,10 @@ export function createObjectSequenceEvaluator(object, sequence, sequenceName, ta
     }
 
     function apply(progress) {
-        const time = Math.max(0, Math.min(1, progress)) * duration;
-
-        let nextIndex = 1;
-
-        while (nextIndex < frames.length - 1 && time > frames[nextIndex].time) {
-            nextIndex++;
-        }
-
-        const previousFrame = frames[nextIndex - 1];
-        const nextFrame = frames[nextIndex];
-
-        const segmentProgress = (time - previousFrame.time) / (nextFrame.time - previousFrame.time);
-        const easedProgress = segmentProgress * segmentProgress * (3 - 2 * segmentProgress);
+        const sample = sampler.sample(progress);
+        const previousFrame = frames[sample.previousIndex];
+        const nextFrame = frames[sample.nextIndex];
+        const easedProgress = sample.progress;
 
         worldRotation.slerpQuaternions(previousFrame.rotation, nextFrame.rotation, easedProgress);
 

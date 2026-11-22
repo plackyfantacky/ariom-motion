@@ -21,3 +21,24 @@ canvas {
     width: 100%;
     height: 100%;
 }
+
+/* temp */
+.portfolio-intro {
+    position: fixed;
+    top: 35vh;
+    left: 8vw;
+    z-index: 1;
+    max-width: 32rem;
+    color: #fff;
+    font-family: sans-serif;
+}
+
+.portfolio-intro h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 5vw, 4rem);
+}
+
+.portfolio-intro p {
+    font-size: 1.125rem;
+    line-height: 1.5;
+}
