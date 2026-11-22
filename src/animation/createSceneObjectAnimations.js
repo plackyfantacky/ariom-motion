@@ -310,9 +310,8 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
                 if (binding.mode === "scrub" && !layer.scrollPlayback) {
                     const end = binding.end * unitSize;
-
                     binding.seek((scrollPosition - start) / (end - start));
-                } else if (binding.mode === "play" && selectionChanged) {
+                } else if (binding.mode === "play" && (selectionChanged || scrollPosition < start)) {
                     binding.seek(scrollPosition <= start ? 0 : 1);
                 }
 

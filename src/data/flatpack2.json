@@ -366,7 +366,7 @@
                         "start": 25,
                         "unit": "vh",
                         "mode": "play",
-                        "direction": "both",
+                        "direction": "down",
                         "once": false
                     }
                 },
