@@ -384,10 +384,12 @@
     "sequences": {
         "logo-settle": {
             "duration": 3,
+            "positionSpace": "local",
             "rotationSpace": "world",
             "keyframes": [
                 {
                     "time": 0,
+                    "position": [0, 0, 0],
                     "projection": {
                         "perspective": 0
                     },
@@ -399,6 +401,7 @@
                 },
                 {
                     "time": 3,
+                    "position": [3, -2, 0],
                     "rotation": [0.25, 1.1, 0],
                     "projection": {
                         "perspective": 1
