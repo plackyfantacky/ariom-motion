@@ -41,22 +41,6 @@ async function initialise() {
         dataset,
     });
 
-    let seekSlider = null;
-
-    function handleScroll() {
-        const scrollDistance = window.innerHeight * 2;
-        const progress = Math.max(0, Math.min(1, window.scrollY / scrollDistance));
-        
-        runtime.seekAnimation("logo-placeholder", "settle", progress);
-
-
-    }
-
-    window.addEventListener("scroll", handleScroll, {
-        passive: true,
-    })
-
-
     const unsubscribeNavigate = runtime.on("navigate", (event) => {
         console.log("Navigation requested:", event.params.url, event);
     });

@@ -220,6 +220,13 @@ export function createScene(mountElement, options = {}) {
         }
     }
 
+    function handleScroll() {
+        objectAnimations.updateScroll(
+            window.screenY,
+            window.innerHeight,
+        );
+    }
+
     function handleResize() {
         responsiveResize(mountElement, [camera, pathLayoutCamera], renderer);
 
@@ -230,6 +237,7 @@ export function createScene(mountElement, options = {}) {
         positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
 
         rebuildArrowPaths();
+        handleScroll();
     }
 
     function destroy() {
@@ -249,6 +257,7 @@ export function createScene(mountElement, options = {}) {
         }
 
         window.removeEventListener("resize", handleResize);
+        window.removeEventListener("scroll", handleScroll);
 
         scene.traverse((object) => {
             if (object.geometry) {
@@ -279,6 +288,11 @@ export function createScene(mountElement, options = {}) {
     }
 
     window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, {
+        passive: true,
+    });
+
+    handleScroll();
     animate();
 
     return {

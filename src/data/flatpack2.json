@@ -320,7 +320,11 @@
             "animation": {
                 "settle": {
                     "play": "logo-settle",
-                    "at": 1
+                    "scroll": {
+                        "start": 0,
+                        "end": 200,
+                        "unit": "vh"
+                    }
                 },
                 "turn": {
                     "play": "logo-turn",
