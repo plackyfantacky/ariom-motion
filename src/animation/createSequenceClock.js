@@ -59,5 +59,8 @@ export function createSequenceClock(duration, loop = false) {
         setDirection,
         restart,
         update,
+        getDirection() {
+            return direction;
+        },
     };
 }

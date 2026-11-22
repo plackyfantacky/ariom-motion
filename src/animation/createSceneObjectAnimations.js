@@ -65,9 +65,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             const clock = createSequenceClock(duration, binding.loop);
 
             let idleStartTime = null;
-            let isAutonomous = false;
-            let seekProgress = null;
-            let playbackDirection = 1;
+            let playbackMode = "scheduled";
 
             function activate() {
                 layer.activeBinding = bindingName;
@@ -75,9 +73,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
                 clock.restart();
 
-                playbackDirection = 1;
-                seekProgress = null;
-                isAutonomous = true;
+                playbackMode = "playing";
                 idleStartTime = null;
 
                 object.userData.idleMotion?.update(0);
@@ -90,9 +86,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 clock.setDirection(direction);
                 clock.seek(clock.getProgress());
 
-                playbackDirection = direction;
-                seekProgress = null;
-                isAutonomous = true;
+                playbackMode = "playing";
                 idleStartTime = null;
 
                 object.userData.idleMotion?.update(0);
@@ -106,13 +100,10 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                     layer.activeBinding = bindingName;
                     layer.scrollPlayback = null;
 
-                    seekProgress = Math.max(0, Math.min(1, progress));
-
-                    clock.seek(seekProgress);
+                    clock.seek(progress);
                     clock.setDirection(1);
 
-                    playbackDirection = 1;
-                    isAutonomous = false;
+                    playbackMode = "held";
                     idleStartTime = null;
                 },
             });
@@ -123,32 +114,30 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
             const controller = {
                 update(currentTime, ambientTime) {
-                    if (seekProgress !== null) {
-                        evaluator.apply(seekProgress);
+                    if (playbackMode === "held") {
+                        evaluator.apply(clock.getProgress());
                         return;
                     }
 
-                    if (binding.loop && hasAt && !isAutonomous && currentTime >= binding.at) {
+                    if (binding.loop && hasAt && playbackMode === "scheduled" && currentTime >= binding.at) {
                         clock.restart();
-                        playbackDirection = 1;
-                        isAutonomous = true;
+                        playbackMode = "playing";
                     }
 
                     let progress;
 
-                    if (isAutonomous) {
+                    if (playbackMode === "playing") {
                         progress = clock.update(ambientTime);
                     } else if (hasAt) {
-                        progress = Math.max(0, Math.min(1, (currentTime - binding.at) / duration));
-
-                        clock.seek(progress);
+                        clock.seek((currentTime - binding.at) / duration);
+                        progress = clock.getProgress();
                     } else {
                         return;
                     }
 
                     evaluator.apply(progress);
 
-                    const hasFinished = !binding.loop && (playbackDirection === 1 ? progress === 1 : progress === 0);
+                    const hasFinished = !binding.loop && (clock.getDirection() === 1 ? progress === 1 : progress === 0);
 
                     if (hasFinished) {
                         if (idleStartTime === null) {
