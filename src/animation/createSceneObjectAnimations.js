@@ -257,6 +257,10 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 let triggeredBinding = null;
                 let triggeredStart = movingDown ? -Infinity : Infinity;
 
+                if (!isScrolling && layer.scrollPlayback) {
+                    return;
+                }
+
                 bindings.forEach((binding) => {
                     const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
 
@@ -312,7 +316,9 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                     binding.seek(scrollPosition <= start ? 0 : 1);
                 }
 
-                if (triggeredBinding) {
+                const triggerCanTakeControl = triggeredBinding && (!movingDown || triggeredBinding === binding);
+
+                if (triggerCanTakeControl) {
                     triggeredBinding.play();
                     triggeredBinding.hasPlayed = true;
                     layer.scrollPlayback = triggeredBinding;
