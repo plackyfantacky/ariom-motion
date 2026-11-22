@@ -220,10 +220,11 @@ export function createScene(mountElement, options = {}) {
         }
     }
 
-    function handleScroll() {
+    function handleScroll(event) {
         objectAnimations.updateScroll(
             window.scrollY,
             window.innerHeight,
+            event?.type === "scroll",
         );
     }
 

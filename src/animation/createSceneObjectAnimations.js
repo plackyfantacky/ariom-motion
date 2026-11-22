@@ -7,6 +7,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
     const unsubscribeEvents = [];
     const scrollBindings = new Map();
     const activations = new Map();
+    let previousScrollPosition = null;
 
     sceneObjects.forEach((object) => {
         const bindings = resolveAnimationBindings(object.userData.animation, object.userData.sceneObjectId);
@@ -47,6 +48,8 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                     activeBinding: null,
                     previousController: null,
                     scheduled: [],
+                    scrollSelection: null,
+                    scrollPlayback: null,
                 });
             }
 
@@ -66,6 +69,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
             function activate() {
                 layer.activeBinding = bindingName;
+                layer.scrollPlayback = null;
                 seekProgress = null;
                 activationPending = true;
             }
@@ -75,6 +79,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
                 seek(progress) {
                     layer.activeBinding = bindingName;
+                    layer.scrollPlayback = null;
                     seekProgress = Math.max(0, Math.min(1, progress));
                     activationPending = false;
                     activationTime = null;
@@ -146,6 +151,11 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
                 scrollBindings.get(layer).push({
                     ...binding.scroll,
+                    mode: binding.scroll.mode ?? "scrub",
+                    direction: binding.scroll.direction ?? "down",
+                    once: binding.scroll.once ?? true,
+                    hasPlayed: false,
+                    play: activate,
                     seek: objectActivations.get(bindingName).seek,
                 });
             }
@@ -233,15 +243,23 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 controller.update(currentTime, ambientTime);
             });
         },
-        updateScroll(scrollPosition, viewportHeight) {
-            scrollBindings.forEach((bindings) => {
+        updateScroll(scrollPosition, viewportHeight, isScrolling = false) {
+            const hasMoved = previousScrollPosition !== null && scrollPosition !== previousScrollPosition;
+
+            const movingDown = hasMoved && scrollPosition > previousScrollPosition;
+
+            scrollBindings.forEach((bindings, layer) => {
                 let earliestBinding = null;
                 let earliestStart = Infinity;
                 let activeBinding = null;
                 let activeStart = -Infinity;
 
+                let triggeredBinding = null;
+                let triggeredStart = movingDown ? -Infinity : Infinity;
+
                 bindings.forEach((binding) => {
                     const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
+
                     const start = binding.start * unitSize;
 
                     if (start < earliestStart) {
@@ -253,16 +271,55 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                         activeBinding = binding;
                         activeStart = start;
                     }
+
+                    if (binding.mode !== "play" || !isScrolling || !hasMoved || (binding.once && binding.hasPlayed)) {
+                        return;
+                    }
+
+                    const crossedDown =
+                        movingDown && ((previousScrollPosition < start && scrollPosition >= start) || (start === 0 && previousScrollPosition === 0));
+
+                    const crossedUp = !movingDown && previousScrollPosition > start && scrollPosition <= start;
+
+                    const matchesDirection = (crossedDown && binding.direction !== "up") || (crossedUp && binding.direction !== "down");
+
+                    if (!matchesDirection) {
+                        return;
+                    }
+
+                    if (!triggeredBinding || (movingDown && start >= triggeredStart) || (!movingDown && start <= triggeredStart)) {
+                        triggeredBinding = binding;
+                        triggeredStart = start;
+                    }
                 });
 
                 const binding = activeBinding ?? earliestBinding;
                 const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
-                
+
                 const start = binding.start * unitSize;
-                const end = binding.end * unitSize;
-                
-                binding.seek((scrollPosition - start) / (end - start));
+                const selectionChanged = layer.scrollSelection !== binding;
+
+                if (selectionChanged) {
+                    layer.scrollSelection = binding;
+                    layer.scrollPlayback = null;
+                }
+
+                if (binding.mode === "scrub" && !layer.scrollPlayback) {
+                    const end = binding.end * unitSize;
+
+                    binding.seek((scrollPosition - start) / (end - start));
+                } else if (binding.mode === "play" && selectionChanged) {
+                    binding.seek(scrollPosition <= start ? 0 : 1);
+                }
+
+                if (triggeredBinding) {
+                    triggeredBinding.play();
+                    triggeredBinding.hasPlayed = true;
+                    layer.scrollPlayback = triggeredBinding;
+                }
             });
+
+            previousScrollPosition = scrollPosition;
         },
         destroy() {
             unsubscribeEvents.forEach((unsubscribe) => {

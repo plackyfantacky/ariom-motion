@@ -29,13 +29,38 @@ export function resolveAnimationBindings(definitions = {}, objectId) {
         if (hasScroll) {
             const scroll = binding.scroll;
 
-            if (!scroll || !Number.isFinite(scroll.start) || !Number.isFinite(scroll.end) || scroll.start < 0 || scroll.end <= scroll.start) {
-                throw new Error(`Animation "${identifier}" requires a non-negative scroll ` + "start and an end greater than start.");
-
+            if (!scroll || !Number.isFinite(scroll.start) || scroll.start < 0) {
+                throw new Error(`Animation "${identifier}" requires a non-negative scroll start.`);
             }
 
             if (!["px", "vh"].includes(scroll.unit)) {
                 throw new Error(`Animation "${identifier}" requires scroll unit "px" or "vh".`);
+            }
+
+            const mode = scroll.mode ?? "scrub";
+
+            if (!["scrub", "play"].includes(mode)) {
+                throw new Error(`Animation "${identifier}" requires scroll mode "scrub" or "play".`);
+            }
+
+            if (mode === "scrub") {
+                if (!Number.isFinite(scroll.end) || scroll.end <= scroll.start) {
+                    throw new Error(`Animation "${identifier}" requires a scroll end ` + "greater than start.");
+                }
+            } else {
+                const direction = scroll.direction ?? "down";
+
+                if (!["down", "up", "both"].includes(direction)) {
+                    throw new Error(`Animation "${identifier}" requires scroll direction ` + '"down", "up", or "both".');
+                }
+
+                if (scroll.once !== undefined && typeof scroll.once !== "boolean") {
+                    throw new Error(`Animation "${identifier}" requires a boolean scroll "once".`);
+                }
+
+                if (scroll.end !== undefined) {
+                    throw new Error(`Animation "${identifier}" uses scroll mode "play", ` + 'which does not use "end".');
+                }
             }
         }
 
