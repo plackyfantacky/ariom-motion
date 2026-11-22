@@ -5,7 +5,7 @@ import { resolveAnimationBindings } from "./resolveAnimationBindings.js";
 export function createSceneObjectAnimations(sceneObjects, sequences = {}, events) {
     const controllers = [];
     const unsubscribeEvents = [];
-    const scrollBindings = [];
+    const scrollBindings = new Map();
     const activations = new Map();
 
     sceneObjects.forEach((object) => {
@@ -140,7 +140,11 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             }
 
             if (hasScroll) {
-                scrollBindings.push({
+                if (!scrollBindings.has(layer)) {
+                    scrollBindings.set(layer, []);
+                }
+
+                scrollBindings.get(layer).push({
                     ...binding.scroll,
                     seek: objectActivations.get(bindingName).seek,
                 });
@@ -230,13 +234,34 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             });
         },
         updateScroll(scrollPosition, viewportHeight) {
-            scrollBindings.forEach((binding) => {
+            scrollBindings.forEach((bindings) => {
+                let earliestBinding = null;
+                let earliestStart = Infinity;
+                let activeBinding = null;
+                let activeStart = -Infinity;
+
+                bindings.forEach((binding) => {
+                    const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
+                    const start = binding.start * unitSize;
+
+                    if (start < earliestStart) {
+                        earliestBinding = binding;
+                        earliestStart = start;
+                    }
+
+                    if (start <= scrollPosition && start >= activeStart) {
+                        activeBinding = binding;
+                        activeStart = start;
+                    }
+                });
+
+                const binding = activeBinding ?? earliestBinding;
                 const unitSize = binding.unit === "vh" ? viewportHeight / 100 : 1;
+                
                 const start = binding.start * unitSize;
                 const end = binding.end * unitSize;
-                const progress = (scrollPosition - start) / (end - start);
-
-                binding.seek(progress);
+                
+                binding.seek((scrollPosition - start) / (end - start));
             });
         },
         destroy() {
@@ -244,7 +269,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                 unsubscribe();
             });
             activations.clear();
-            scrollBindings.length = 0;
+            scrollBindings.clear();
             controllers.length = 0;
         },
     };

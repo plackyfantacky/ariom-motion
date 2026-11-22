@@ -357,7 +357,7 @@
         },
         {
             "id": "intro-content",
-            "type" : "dom",
+            "type": "dom",
             "element": "portfolio-intro",
             "animation": {
                 "enter": {
@@ -365,6 +365,14 @@
                     "scroll": {
                         "start": 0,
                         "end": 100,
+                        "unit": "vh"
+                    }
+                },
+                "exit": {
+                    "play": "content-exit",
+                    "scroll": {
+                        "start": 150,
+                        "end": 200,
                         "unit": "vh"
                     }
                 }
@@ -458,6 +466,21 @@
                     "time": 1,
                     "translate": [0, 0],
                     "opacity": 1
+                }
+            ]
+        },
+        "content-exit": {
+            "duration": 1,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "translate": [0, 0],
+                    "opacity": 1
+                },
+                {
+                    "time": 1,
+                    "translate": [0, -80],
+                    "opacity": 0
                 }
             ]
         }
