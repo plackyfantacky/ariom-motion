@@ -14,6 +14,7 @@ const defaults = {
     cameraFrustumVisible: false,
     sceneOriginVisible: true,
     uiVisible: true,
+    cameraMode: "orbital",
 };
 
 export function createEditorPreferences() {
