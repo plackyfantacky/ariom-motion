@@ -344,7 +344,9 @@ export function createScene(mountElement, options = {}) {
         },
 
         setInteractionsEnabled: objectInteractions.setEnabled,
+        
         playAnimation: objectAnimations.play,
+        seekAnimation: objectAnimations.seek,
 
         resize: handleResize,
         destroy,

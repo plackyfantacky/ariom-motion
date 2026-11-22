@@ -5,6 +5,7 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
     const controllers = [];
     const unsubscribeEvents = [];
     const activations = new Map();
+    let seekProgress = null;
 
     sceneObjects.forEach((object) => {
         const bindings = resolveAnimationBindings(object.userData.animation, object.userData.sceneObjectId);
@@ -55,10 +56,21 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
             function activate() {
                 layer.activeBinding = bindingName;
+                seekProgress = null;
                 activationPending = true;
             }
 
-            objectActivations.set(bindingName, activate);
+            objectActivations.set(bindingName, {
+                play: activate,
+
+                seek(progress) {
+                    layer.activeBinding = bindingName;
+                    seekProgress = Math.max(0, Math.min(1, progress));
+                    activationPending = false;
+                    activationTime = null;
+                    idleStartTime = null;
+                },
+            });
 
             if (hasOn) {
                 unsubscribeEvents.push(events.on(binding.on, activate));
@@ -66,6 +78,11 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
 
             const controller = {
                 update(currentTime, ambientTime) {
+                    if (seekProgress !== null) {
+                        evaluator.apply(seekProgress);
+                        return;
+                    }
+
                     if (activationPending) {
                         activationPending = false;
                         activationTime = ambientTime;
@@ -164,13 +181,31 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
     //output
     return {
         play(objectId, bindingName) {
-            const activate = activations.get(objectId)?.get(bindingName);
+            const activation = activations.get(objectId)?.get(bindingName);
 
-            if (!activate) {
-                throw new Error(`Unknown animation binding: ${objectId}.${bindingName}`);
+            if (!activation) {
+                console.warn(`Unknown animation binding: ${objectId}.${bindingName}`);
+                return false;
             }
 
-            activate();
+            activation.play();
+            return true;
+        },
+        seek(objectId, bindingName, progress) {
+            const activation = activations.get(objectId)?.get(bindingName);
+
+            if (!activation) {
+                console.warn(`Unknown animation binding: ${objectId}.${bindingName}`);
+                return false;
+            }
+
+            if (!Number.isFinite(progress)) {
+                console.warn("Animation progress must be a finite number.");
+                return false;
+            }
+
+            activation.seek(progress);
+            return true;
         },
         update(currentTime, ambientTime) {
             controllers.forEach((controller) => {
