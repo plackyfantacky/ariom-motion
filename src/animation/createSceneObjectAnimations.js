@@ -326,11 +326,8 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
                         return;
                     }
 
-                    const crossedDown =
-                        movingDown && ((previousScrollPosition < start && scrollPosition >= start) || (start === 0 && previousScrollPosition === 0));
-
+                    const crossedDown = movingDown && previousScrollPosition <= start && scrollPosition > start;
                     const crossedUp = !movingDown && previousScrollPosition > start && scrollPosition <= start;
-
                     const matchesDirection = (crossedDown && binding.direction !== "up") || (crossedUp && binding.direction !== "down");
 
                     const isReturnCrossing =
