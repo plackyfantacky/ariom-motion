@@ -20,15 +20,7 @@ const VIEW_PRESETS = {
     bottom: [0, -1, -0.0001],
 };
 
-export function createCameraController({
-    camera,
-    renderer,
-    mountElement,
-    scene,
-    initialCameraTarget,
-    hasInitialCameraState,
-    getCameraTrack,
-}) {
+export function createCameraController({ camera, renderer, mountElement, scene, initialCameraTarget, hasInitialCameraState, getCameraTrack }) {
     let cameraMode = CAMERA_MODES.ORBITAL;
     let currentViewPreset = null;
 
@@ -37,22 +29,18 @@ export function createCameraController({
 
     let interactionEnabled = true;
 
-    const cameraPivot = new THREE.Vector3(
-        initialCameraTarget?.x ?? 0,
-        initialCameraTarget?.y ?? 0,
-        initialCameraTarget?.z ?? 0,
-    );
+    const cameraPivot = new THREE.Vector3(initialCameraTarget?.x ?? 0, initialCameraTarget?.y ?? 0, initialCameraTarget?.z ?? 0);
 
     const cameraDirection = new THREE.Vector3();
     const cameraUp = new THREE.Vector3();
 
-    if (hasInitialCameraState) {
-        cameraUp.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+    // if (hasInitialCameraState) {
+    //     cameraUp.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
 
-        camera.up.copy(cameraUp);
-    } else {
-        camera.up.set(0, 1, 0);
-    }
+    //     camera.up.copy(cameraUp);
+    // } else {
+    //     camera.up.set(0, 1, 0);
+    // }
 
     let orbitControls = createOrbitControls();
 
@@ -291,14 +279,14 @@ export function createCameraController({
 
     function reset() {
         cameraMode = CAMERA_MODES.ORBITAL;
-        
+
         camera.position.copy(initialCameraPosition);
         camera.quaternion.copy(initialCameraQuaternion);
         camera.up.copy(initialCameraUp);
-        
+
         rebuildOrbitControls(initialOrbitTarget);
         setInteractionEnabled(interactionEnabled);
-        
+
         orbitDistance = camera.position.distanceTo(initialOrbitTarget);
         cameraTargetDistance = orbitDistance;
 
@@ -322,6 +310,11 @@ export function createCameraController({
                 x: Number(orbitControls.target.x.toFixed(3)),
                 y: Number(orbitControls.target.y.toFixed(3)),
                 z: Number(orbitControls.target.z.toFixed(3)),
+            },
+            up: {
+                x: Number(camera.up.x.toFixed(6)),
+                y: Number(camera.up.y.toFixed(6)),
+                z: Number(camera.up.z.toFixed(6)),
             },
         };
 
@@ -350,9 +343,7 @@ export function createCameraController({
 
             camera.getWorldDirection(cameraDirection);
 
-            orbitControls.target
-                .copy(camera.position)
-                .addScaledVector(cameraDirection, cameraTargetDistance);
+            orbitControls.target.copy(camera.position).addScaledVector(cameraDirection, cameraTargetDistance);
         } else {
             orbitControls.update();
 

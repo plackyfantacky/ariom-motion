@@ -65,8 +65,8 @@ export function createScene(mountElement, options = {}) {
 
     if (staticCamera) {
         camera.position.set(staticCamera.position.x, staticCamera.position.y, staticCamera.position.z);
-
         camera.quaternion.set(staticCamera.quaternion.x, staticCamera.quaternion.y, staticCamera.quaternion.z, staticCamera.quaternion.w);
+        camera.up.set(staticCamera.up?.x ?? 0, staticCamera.up?.y ?? 1, staticCamera.up?.z ?? 0).normalize();
     } else {
         camera.position.set(0, 5, 12);
         camera.lookAt(0, 0, 0);
@@ -116,19 +116,12 @@ export function createScene(mountElement, options = {}) {
 
     rebuildArrowPaths();
 
-    const getObjectAtPointer = createObjectLocator(
-    scene,
-    camera,
-    renderer.domElement
-);
+    const getObjectAtPointer = createObjectLocator(scene, camera, renderer.domElement);
 
-    const objectInteractions = createObjectInteractions(
-        renderer.domElement,
-        {
-            getObjectAtPointer,
-            emit: events.emit,
-        }
-    );
+    const objectInteractions = createObjectInteractions(renderer.domElement, {
+        getObjectAtPointer,
+        emit: events.emit,
+    });
 
     const timer = new THREE.Timer();
     let animationFrameId = null;
@@ -221,11 +214,7 @@ export function createScene(mountElement, options = {}) {
     }
 
     function handleScroll(event) {
-        objectAnimations.updateScroll(
-            window.scrollY,
-            window.innerHeight,
-            event?.type === "scroll",
-        );
+        objectAnimations.updateScroll(window.scrollY, window.innerHeight, event?.type === "scroll");
     }
 
     function handleResize() {
@@ -284,7 +273,7 @@ export function createScene(mountElement, options = {}) {
         sceneObjects.forEach((object) => {
             object.userData.destroy?.();
         });
-        
+
         sceneObjects.clear();
         renderer.dispose();
 
@@ -364,7 +353,7 @@ export function createScene(mountElement, options = {}) {
         },
 
         setInteractionsEnabled: objectInteractions.setEnabled,
-        
+
         playAnimation: objectAnimations.play,
         seekAnimation: objectAnimations.seek,
         setAnimationDirection: objectAnimations.setDirection,
