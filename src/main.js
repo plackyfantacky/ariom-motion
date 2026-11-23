@@ -1,25 +1,26 @@
 import { createScene } from "./scene/createScene.js";
-import { loadArrowDataset } from "./data/loadDataset.js";
-
+import { loadDataset } from "./data/loadDataset.js";
 import { prepareAuthoring } from "@ariom-motion/authoring";
 
-/* prettier-ignore */
 export async function createMotion({
-    mountElement = document.querySelector("[data-ariom-motion]") || document.body,
-    dataset: providedDataset = null,
+    /* prettier-ignore */
+    mountElement,
+    dataset: datasetSource,
+    editor = {},
 } = {}) {
+    if (!mountElement) {
+        throw new TypeError("createMotion requires a mount element.");
+    }
 
-    const defaultDatasetName = "demo-simple";
-    const authoring = prepareAuthoring(defaultDatasetName);
-    const datasetName = authoring?.datasetName ?? defaultDatasetName;
+    const authoring = prepareAuthoring(editor);
 
-    const dataset = providedDataset ?? await loadArrowDataset(datasetName);
+    const dataset = await loadDataset(authoring?.datasetSource ?? datasetSource);
 
     const runtime = createScene(mountElement, {
         dataset,
     });
 
-   let editorAttachment = null;
+    let editorAttachment = null;
 
     try {
         editorAttachment = authoring?.attach(runtime, dataset) ?? null;

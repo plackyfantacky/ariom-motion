@@ -1,14 +1,84 @@
 {
-    "name": "demo",
+    "name": "demo-simple",
     "animationSettings": {
         "timelineDuration": 8,
         "speed": 1,
         "isPlaying": true,
-        "isLooping": true
+        "isLooping": false
     },
-    "viewport": {
-        "offsetX": 0.3,
-        "offsetY": 0
+    "environment": {
+        "type": "gradient",
+        "startColour": "#F7B76A",
+        "endColour": "#CB6B2D",
+        "groundColour": "#A95F2A",
+        "groundHeight": -0.25,
+        "fog": {
+            "colour": "#C98247",
+            "near": 30,
+            "far": 55
+        }
+    },
+    "shaders": {
+        "background": {
+            "type": "atmosphericSky",
+            "skyColour": "#D97A32",
+            "horizonColour": "#C98247",
+            "gradientHeight": 0.6
+        }
+    },
+    "lighting": {
+        "shadows": true,
+        "lights": [
+            {
+                "type": "hemisphere",
+                "skyColour": "#FFAB36",
+                "groundColour": "#9B7653",
+                "intensity": 1
+            },
+            {
+                "type": "directional",
+                "colour": "#FFFFFF",
+                "intensity": 1.5,
+                "position": {
+                    "x": 10,
+                    "y": 16,
+                    "z": 8
+                },
+                "target": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                },
+                "castShadow": true,
+                "shadow": {
+                    "mapSize": 2048,
+                    "radius": 10,
+                    "bias": -0.0002,
+                    "normalBias": 0.02,
+                    "camera": {
+                        "near": 1,
+                        "far": 80,
+                        "left": -30,
+                        "right": 30,
+                        "top": 30,
+                        "bottom": -30
+                    }
+                }
+            }
+        ]
+    },
+    "staticCamera": {
+        "position": {
+            "x": 3.713,
+            "y": 3.899,
+            "z": 4.064
+        },
+        "quaternion": {
+            "x": -0.220425,
+            "y": 0.211985,
+            "z": 0.048549,
+            "w": 0.950851
+        }
     },
     "cameraTrack": [
         {
@@ -66,51 +136,20 @@
     ],
     "arrowPaths": [
         {
-            "name": "demo",
-            "origin": [
-                -2,
-                0,
-                0
-            ],
-            "initialDirection": "+x",
-            "initialNormal": "+y",
+            "name": "a",
+            "origin": [-2, 0, 0],
+            "initialDirection": "-x",
+            "initialNormal": "+z",
             "moves": [
-                [
-                    "forward",
-                    3
-                ],
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "turnRight",
-                    2
-                ],
-                [
-                    "turnRight",
-                    2
-                ],
-                [
-                    "bendUp",
-                    1.75
-                ],
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "turnRight",
-                    3
-                ]
+                ["forward", 0.5],
+                ["turnRight", 2.2],
+                ["turnLeft", 2.2],
+                ["turnLeft", 2.2],
+                ["turnLeft", 1.15]
             ],
             "timing": {
                 "delay": 0,
-                "duration": 8
+                "duration": 6
             }
         }
     ]

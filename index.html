@@ -14,18 +14,6 @@
             <p>A little content to test moving HTML alongside the scene.</p>
         </section>
 
-        <script type="module">
-            import { createMotion } from "./dist/main.js";
-
-            await createMotion({
-                mountElement: document.querySelector("[data-ariom-motion]"),
-            });
-
-            motion.on("navigate", (event) => {
-                console.log("Navigation requested:", event.params.url, event);
-            });
-
-            window.addEventListener("pagehide", () => { motion.destroy(); }, { once: true });
-        </script>
+        <script type="module" src="./public/demo.js"></script>
     </body>
 </html>

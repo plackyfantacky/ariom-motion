@@ -15,7 +15,7 @@ const buildInfo = getBuildInfo();
 
 const options = {
     entryPoints: ["src/main.js"],
-    outfile: "dist/main.js",
+    outfile: "dist/ariom-motion.js",
     bundle: true,
     format: "esm",
     minify: !isDevelopment,
@@ -67,7 +67,7 @@ if (watch) {
 
         console.log('Production check passed: no editor modules included.');
 
-        await writeFile('dist/main.meta.json', JSON.stringify(result.metafile));
+        await writeFile('dist/ariom-motion.meta.json', JSON.stringify(result.metafile));
 
         console.log(
             await analyzeMetafile(result.metafile, {

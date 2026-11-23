@@ -1,22 +1,21 @@
-import { editorConfig } from "./editorConfig.js";
 import { attachArrowCloudEditor } from "./attachArrowCloudEditor.js";
 import { readEditorUrlOptions, selectEditorDataset } from "./editorUrlOptions.js";
 
-export function prepareAuthoring(defaultDatasetName) {
-    if (!editorConfig.enabled) {
+export function prepareAuthoring(options = {}) {
+    if (!options.enabled) {
         return null;
     }
 
-    const urlOptions = readEditorUrlOptions(defaultDatasetName);
+    const urlOptions = readEditorUrlOptions(null);
 
     return {
-        datasetName: urlOptions.datasetName,
+        datasetSource: urlOptions.datasetName ? `./src/data/${urlOptions.datasetName}.json` : null,
 
         attach(runtime, dataset) {
             const stylesheet = document.createElement("link");
 
             stylesheet.rel = "stylesheet";
-            stylesheet.href = new URL("./main.css", import.meta.url).href;
+            stylesheet.href = new URL("./ariom-motion.css", import.meta.url).href;
 
             document.head.appendChild(stylesheet);
 
