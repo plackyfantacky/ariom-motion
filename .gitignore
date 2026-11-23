@@ -1,6 +1,7 @@
 node_modules
-arrow-cloud-prototype.code-workspace
+*.code-workspace
 dist
+.vscode
 
 .DS_Store
 Thumbs.db
