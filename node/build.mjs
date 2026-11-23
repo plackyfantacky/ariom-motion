@@ -66,4 +66,4 @@ if (watch) {
     }
 }
 
-console.log(`Arrow Cloud ${buildInfo.identifier} (${buildInfo.branch})`);
+console.log(`Ariom Motion ${buildInfo.identifier} (${buildInfo.branch})`);
