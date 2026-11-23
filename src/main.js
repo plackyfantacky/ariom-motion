@@ -9,12 +9,12 @@ export async function createMotion({
     dataset: providedDataset = null,
 } = {}) {
 
-    const defaultDatasetName = "demo";
+    const defaultDatasetName = "demo-simple";
     const authoring = prepareAuthoring(defaultDatasetName);
     const datasetName = authoring?.datasetName ?? defaultDatasetName;
 
-    const dataset = await loadArrowDataset(datasetName);
-
+    const dataset = providedDataset ?? await loadArrowDataset(datasetName);
+    
     const runtime = createScene(mountElement, {
         dataset,
     });
