@@ -20,6 +20,12 @@
             await createMotion({
                 mountElement: document.querySelector("[data-ariom-motion]"),
             });
+
+            motion.on("navigate", (event) => {
+                console.log("Navigation requested:", event.params.url, event);
+            });
+
+            window.addEventListener("pagehide", () => { motion.destroy(); }, { once: true });
         </script>
     </body>
 </html>

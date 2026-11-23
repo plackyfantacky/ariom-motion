@@ -14,24 +14,38 @@ export async function createMotion({
     const datasetName = authoring?.datasetName ?? defaultDatasetName;
 
     const dataset = providedDataset ?? await loadArrowDataset(datasetName);
-    
+
     const runtime = createScene(mountElement, {
         dataset,
     });
 
-    const unsubscribeNavigate = runtime.on("navigate", (event) => {
-        console.log("Navigation requested:", event.params.url, event);
-    });
+   let editorAttachment = null;
 
-    const editorAttachment = authoring?.attach(runtime, dataset) ?? null;
+    try {
+        editorAttachment = authoring?.attach(runtime, dataset) ?? null;
+    } catch (error) {
+        runtime.destroy();
+        throw error;
+    }
 
-    window.addEventListener(
-        "pagehide",
-        () => {
+    let destroyed = false;
+
+    function destroy() {
+        if (destroyed) {
+            return;
+        }
+
+        destroyed = true;
+
+        try {
             editorAttachment?.destroy();
-            unsubscribeNavigate();
+        } finally {
             runtime.destroy();
-        },
-        { once: true },
-    );
+        }
+    }
+
+    return {
+        ...runtime,
+        destroy,
+    };
 }
