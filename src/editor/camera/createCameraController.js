@@ -294,6 +294,8 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     }
 
     function copy() {
+        const exportedUp = cameraMode === CAMERA_MODES.FLY ? new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion).normalize() : camera.up.clone();
+
         const output = {
             position: {
                 x: Number(camera.position.x.toFixed(3)),
@@ -312,9 +314,9 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
                 z: Number(orbitControls.target.z.toFixed(3)),
             },
             up: {
-                x: Number(camera.up.x.toFixed(6)),
-                y: Number(camera.up.y.toFixed(6)),
-                z: Number(camera.up.z.toFixed(6)),
+                x: Number(exportedUp.x.toFixed(6)),
+                y: Number(exportedUp.y.toFixed(6)),
+                z: Number(exportedUp.z.toFixed(6)),
             },
         };
 

@@ -69,20 +69,20 @@
     },
     "staticCamera": {
         "position": {
-            "x": -3.138,
-            "y": 5.352,
-            "z": -0.38
+            "x": -2.795,
+            "y": 4.672,
+            "z": 2.874
         },
         "quaternion": {
-            "x": -0.273101,
-            "y": 0.414996,
-            "z": 0.31085,
-            "w": 0.810288
+            "x": -0.352358,
+            "y": 0.138691,
+            "z": 0.052887,
+            "w": 0.924019
         },
         "target": {
-            "x": -10.936,
-            "y": -5.515,
-            "z": -8.235
+            "x": -6.544,
+            "y": -6.725,
+            "z": -9.334
         },
         "up": {
             "x": 0,
@@ -159,7 +159,7 @@
             ],
             "timing": {
                 "delay": 0,
-                "duration": 4
+                "duration": 3
             }
         },
         {
@@ -172,8 +172,54 @@
                 ["turnRight", 1.5]
             ],
             "timing": {
-                "delay": 2,
-                "duration": 4
+                "delay": 0.2,
+                "duration": 3
+            }
+        },
+        {
+            "name": "i",
+            "origin": [-5, 0, -2],
+            "initialDirection": "-z",
+            "initialNormal": "+y",
+            "moves": [["forward", 2.5]],
+            "timing": {
+                "delay": 0.4,
+                "duration": 2
+            }
+        },
+        {
+            "name": "path-1",
+            "origin": [-3.5, 0.5, -2],
+            "initialDirection": "+x",
+            "initialNormal": "+y",
+            "moves": [
+                ["forward", 1.8],
+                ["turnLeft", 2.2],
+                ["turnLeft", 2.2],
+                ["turnLeft", 1.2]
+            ],
+            "timing": {
+                "delay": 0.6,
+                "duration": 3
+            }
+        },
+        {
+            "name": "path-2",
+            "origin": [-2.5, 0, -3.5],
+            "initialDirection": "-z",
+            "initialNormal": "+y",
+            "moves": [
+                ["forward", 2.2],
+                ["turnRight", 1],
+                ["turnRight", 1],
+                ["turnLeft", 0.6],
+                ["turnLeft", 1],
+                ["turnRight", 1],
+                ["turnRight", 2]
+            ],
+            "timing": {
+                "delay": 0.8,
+                "duration": 3
             }
         }
     ]
