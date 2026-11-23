@@ -1,6 +1,7 @@
 import { rm, writeFile } from 'node:fs/promises';
 import { analyzeMetafile, build, context } from 'esbuild';
 import { getBuildInfo } from './getBuildInfo.mjs';
+import { fileURLToPath } from "node:url";
 
 const target = process.argv[2];
 const watch = process.argv.includes('--watch');
@@ -30,6 +31,16 @@ const options = {
         __ARROW_CLOUD_BUILD__: JSON.stringify(buildInfo),
         __ARROW_CLOUD_DEV__: JSON.stringify(isDevelopment),
     },
+    alias: {
+    "@ariom-motion/authoring": fileURLToPath(
+        new URL(
+            isDevelopment
+                ? "../src/editor/prepareAuthoring.js"
+                : "../src/startup/prepareAuthoring.js",
+            import.meta.url,
+        ),
+    ),
+},
 };
 
 await rm("dist", {
