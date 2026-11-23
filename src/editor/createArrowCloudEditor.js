@@ -38,6 +38,7 @@ export function createArrowCloudEditor({
     getRenderedArrowItems,
     getArrows,
     onArrowPathsChange,
+    hasInitialCameraState,
     onDatasetChange,
     onUIVisibilityChange = () => {},
 }) {
@@ -60,6 +61,7 @@ export function createArrowCloudEditor({
         mountElement,
         scene,
         initialCameraTarget,
+        hasInitialCameraState,
         getCameraTrack,
         cameraFrustumVisible: preferences.get("cameraFrustumVisible"),
     });

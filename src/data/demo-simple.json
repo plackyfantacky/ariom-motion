@@ -69,15 +69,20 @@
     },
     "staticCamera": {
         "position": {
-            "x": 3.713,
-            "y": 3.899,
-            "z": 4.064
+            "x": -1.801,
+            "y": 13.285,
+            "z": 3.44
         },
         "quaternion": {
-            "x": -0.220425,
-            "y": 0.211985,
-            "z": 0.048549,
-            "w": 0.950851
+            "x": -0.561759,
+            "y": 0.128078,
+            "z": 0.088551,
+            "w": 0.812516
+        },
+        "target": {
+            "x": -3.486,
+            "y": -1.227,
+            "z": -1.772
         }
     },
     "cameraTrack": [
@@ -137,19 +142,33 @@
     "arrowPaths": [
         {
             "name": "a",
-            "origin": [-2, 0, 0],
+            "origin": [-7, 0, -3],
             "initialDirection": "-x",
-            "initialNormal": "+z",
+            "initialNormal": "+y",
             "moves": [
-                ["forward", 0.5],
+                ["forward", 0.65],
                 ["turnRight", 2.2],
                 ["turnLeft", 2.2],
                 ["turnLeft", 2.2],
-                ["turnLeft", 1.15]
+                ["turnLeft", 1.1]
             ],
             "timing": {
                 "delay": 0,
-                "duration": 6
+                "duration": 4
+            }
+        },
+        {
+            "name": "r",
+            "origin": [-6.5, 0.5, -4],
+            "initialDirection": "-z",
+            "initialNormal": "+y",
+            "moves": [
+                ["forward", 2.2],
+                ["turnRight", 1.5]
+            ],
+            "timing": {
+                "delay": 2,
+                "duration": 4
             }
         }
     ]

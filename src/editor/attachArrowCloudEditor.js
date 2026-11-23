@@ -17,6 +17,8 @@ export function attachArrowCloudEditor(runtime, options = {}) {
         getRenderedArrowItems: runtime.getRenderedArrowItems,
         getArrows: runtime.getArrows,
 
+        hasInitialCameraState: options.hasInitialCameraState,
+
         onArrowPathsChange: runtime.setArrowPaths,
         onDatasetChange: options.onDatasetChange,
         onUIVisibilityChange(isVisible) {

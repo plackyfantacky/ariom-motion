@@ -299,7 +299,7 @@ export function createScene(mountElement, options = {}) {
     });
 
     handleScroll();
-    animate();
+    animationFrameId = requestAnimationFrame(animate);
 
     return {
         scene,

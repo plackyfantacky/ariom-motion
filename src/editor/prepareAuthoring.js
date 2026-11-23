@@ -26,6 +26,7 @@ export function prepareAuthoring(options = {}) {
                     cameraView: urlOptions.cameraView,
                     cameraDistance: urlOptions.cameraDistance,
                     cameraTarget: dataset.staticCamera?.target,
+                    hasInitialCameraState: Boolean(dataset.staticCamera),
                     onDatasetChange: selectEditorDataset,
                 });
             } catch (error) {
