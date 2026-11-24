@@ -4,7 +4,7 @@ const motion = await createMotion({
     mountElement: document.querySelector("[data-ariom-motion]"),
     dataset: new URL("../examples/demo-simple.json", import.meta.url),
     editor: {
-        enabled: false,
+        enabled: true,
     },
 });
 
