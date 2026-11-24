@@ -2,40 +2,74 @@
     <button type="button" class="editor-camera-controls__toggle" data-action="toggle" aria-expanded="true">Camera ▾</button>
 
     <div class="editor-camera-controls__content" data-content>
-        <div class="editor-camera-controls__row">
-            <button type="button" data-camera-mode="orbital">Orbital</button>
-            <button type="button" data-camera-mode="tracked">Tracked</button>
-            <button type="button" data-camera-mode="fly">Fly</button>
-        </div>
+        <section class="editor-camera-controls__section">
+            <h3 class="editor-camera-controls__heading">Viewport navigation</h3>
 
-        <div class="editor-camera-controls__row">
-            <button type="button" data-camera-view="front">Front</button>
-            <button type="button" data-camera-view="back">Back</button>
-            <button type="button" data-camera-view="left">Left</button>
-            <button type="button" data-camera-view="right">Right</button>
-            <button type="button" data-camera-view="top">Top</button>
-            <button type="button" data-camera-view="bottom">Bottom</button>
-        </div>
+            <div class="editor-camera-controls__row">
+                <button type="button" data-camera-mode="orbital">Orbital</button>
+                <button type="button" data-camera-mode="fly">Fly</button>
+                <button type="button" data-camera-mode="tracked">Follow scene</button>
+            </div>
 
-        <div class="editor-camera-controls__row">
-            <button type="button" data-action="reset-camera">Reset</button>
-            <button type="button" data-action="copy-camera">Copy camera</button>
-        </div>
-        <div class="editor-camera-controls__row">
-            <label>
-                <input type="checkbox" data-camera-target-visible checked />
-                Camera target
+            <p class="editor-camera-controls__notice" data-camera-lock-notice role="status" hidden>Orbital controls are locked by the scene.</p>
+
+            <label class="editor-camera-controls__option" data-camera-orbital-options>
+                <input type="checkbox" data-camera-zoom-enabled />
+                Enable zoom
             </label>
-            <label>
-                <input type="checkbox" data-camera-up-visible checked />
-                Camera up
-            </label>
-        </div>
-        <div class="editor-camera-controls__row">
-            <label>
-                <input type="checkbox" data-camera-frustum-visible />
-                Camera frustum
-            </label>
-        </div>
+        </section>
+
+        <section class="editor-camera-controls__section">
+            <h3 class="editor-camera-controls__heading">Viewport direction</h3>
+
+            <div class="editor-camera-controls__views">
+                <button type="button" class="editor-camera-controls__view--top" data-camera-view="top">Top</button>
+                <button type="button" class="editor-camera-controls__view--left" data-camera-view="left">Left</button>
+                <button type="button" class="editor-camera-controls__view--front" data-camera-view="front">Front</button>
+                <button type="button" class="editor-camera-controls__view--right" data-camera-view="right">Right</button>
+                <button type="button" class="editor-camera-controls__view--bottom" data-camera-view="bottom">Bottom</button>
+                <button type="button" class="editor-camera-controls__view--back" data-camera-view="back">Back</button>
+            </div>
+
+            <button type="button" data-action="reset-camera">Reset viewport</button>
+        </section>
+
+        <section class="editor-camera-controls__section">
+            <h3 class="editor-camera-controls__heading">Show/Hide</h3>
+
+            <div class="editor-camera-controls__options">
+                <label class="editor-camera-controls__option">
+                    <input type="checkbox" data-camera-mesh-visible disabled />
+                    Camera mesh
+                </label>
+
+                <label class="editor-camera-controls__option">
+                    <input type="checkbox" data-camera-frustum-visible />
+                    Frustum
+                </label>
+
+                <label class="editor-camera-controls__option">
+                    <input type="checkbox" data-camera-target-visible checked />
+                    Target
+                </label>
+
+                <label class="editor-camera-controls__option">
+                    <input type="checkbox" data-camera-up-visible checked />
+                    Up direction
+                </label>
+
+                <label class="editor-camera-controls__option">
+                    <input type="checkbox" data-dom-visible checked disabled />
+                    DOM content
+                </label>
+            </div>
+        </section>
+
+        <section class="editor-camera-controls__section">
+            <h3 class="editor-camera-controls__heading">Copy</h3>
+
+            <button type="button" data-action="copy-scene-camera">Copy scene camera</button>
+            <button type="button" data-action="copy-current-viewport">Copy current viewport</button>
+        </section>
     </div>
 </div>

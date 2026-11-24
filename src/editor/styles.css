@@ -281,18 +281,97 @@
 
 .editor-camera-controls__content {
     display: grid;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: 1rem;
+    margin-top: 0.75rem;
 
     &[hidden] {
         display: none;
     }
 }
 
+.editor-camera-controls__section {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.editor-camera-controls__heading {
+    margin: 0 0 0.25rem;
+    color: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 .editor-camera-controls__row {
     display: flex;
-    gap: 0.35rem;
     flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.editor-camera-controls__views {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+        ". top ."
+        "left front right"
+        ". bottom back";
+    gap: 0.35rem;
+}
+
+.editor-camera-controls__view--top {
+    grid-area: top;
+}
+
+.editor-camera-controls__view--left {
+    grid-area: left;
+}
+
+.editor-camera-controls__view--front {
+    grid-area: front;
+}
+
+.editor-camera-controls__view--right {
+    grid-area: right;
+}
+
+.editor-camera-controls__view--bottom {
+    grid-area: bottom;
+}
+
+.editor-camera-controls__view--back {
+    grid-area: back;
+}
+
+.editor-camera-controls__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.editor-camera-controls__option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.editor-camera-controls__notice {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    border-left: 3px solid #ff9d2a;
+    background: rgb(255 157 42 / 10%);
+    color: #ffc783;
+    font-size: 0.8rem;
+
+    &[hidden] {
+        display: none;
+    }
 }
 
 /** scene **/

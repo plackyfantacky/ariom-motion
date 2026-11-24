@@ -49,7 +49,12 @@ export function createArrowCloudEditor({
     document.body.append(sidebar);
 
     //before camera controller is made
-    const cameraFrustumHelper = createCameraFrustumHelper(scene, camera);
+    /* prettier-ignore */
+    const cameraFrustumHelper = createCameraFrustumHelper(
+        scene, 
+        camera,
+        cameraOrbit.getControls().target,
+    );
 
     cameraFrustumHelper.setVisible(preferences.get("cameraFrustumVisible"));
 
@@ -110,7 +115,11 @@ export function createArrowCloudEditor({
             preferences.set("cameraMode", cameraController.getMode());
         },
 
-        onCopyCamera() {
+        onCopySceneCamera() {
+            cameraController.copy(cameraFrustumHelper.getCamera(), cameraFrustumHelper.getTarget());
+        },
+
+        onCopyCurrentViewport() {
             cameraController.copy();
         },
 
@@ -127,6 +136,16 @@ export function createArrowCloudEditor({
         onCameraFrustumVisibilityChange(isVisible) {
             cameraFrustumHelper.setVisible(isVisible);
             preferences.set("cameraFrustumVisible", isVisible);
+        },
+
+        cameraZoomEnabled: cameraController.getZoomEnabled(),
+
+        onCameraZoomChange(isEnabled) {
+            cameraController.setZoomEnabled(isEnabled);
+        },
+
+        getCameraLocked() {
+            return cameraOrbit.isLocked();
         },
     });
 
@@ -307,6 +326,7 @@ export function createArrowCloudEditor({
         timelineControls.updateProgressInput();
 
         cameraController.update(deltaTime);
+        cameraControls.updateCameraLock();
         pathTools.update();
 
         gridHelper.position.x = Math.round(camera.position.x);

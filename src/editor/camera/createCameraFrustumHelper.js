@@ -1,8 +1,9 @@
 
 import * as THREE from 'three';
 
-export function createCameraFrustumHelper(scene, camera) {
+export function createCameraFrustumHelper(scene, camera, target) {
     const referenceCamera = camera.clone();
+    const referenceTarget = target.clone();
 
     referenceCamera.updateProjectionMatrix();
     referenceCamera.updateMatrixWorld(true);
@@ -26,6 +27,12 @@ export function createCameraFrustumHelper(scene, camera) {
 
     return {
         setVisible,
+        getCamera() {
+            return referenceCamera;
+        },
+        getTarget() {
+            return referenceTarget;
+        },
         destroy
     };
 }

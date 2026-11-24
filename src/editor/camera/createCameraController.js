@@ -27,6 +27,7 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
     let onViewPresetChange = () => {};
 
     let interactionEnabled = true;
+    let zoomEnabled = false;
 
     const cameraPivot = new THREE.Vector3(initialCameraTarget?.x ?? 0, initialCameraTarget?.y ?? 0, initialCameraTarget?.z ?? 0);
 
@@ -74,6 +75,7 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
 
         cameraOrbit.setEnabled(interactionEnabled && cameraMode === CAMERA_MODES.ORBITAL);
 
+        controls.enableZoom = zoomEnabled;
         controls.addEventListener("change", handleOrbitChange);
 
         return controls;
@@ -85,6 +87,7 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         cameraPivot.copy(target);
         orbitControls = cameraOrbit.rebuild(target);
 
+        orbitControls.enableZoom = zoomEnabled;
         orbitControls.addEventListener("change", handleOrbitChange);
     }
 
@@ -161,6 +164,15 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
 
         currentViewPreset = null;
         onViewPresetChange();
+    }
+
+    function setZoomEnabled(isEnabled) {
+        zoomEnabled = isEnabled;
+        orbitControls.enableZoom = zoomEnabled;
+    }
+
+    function getZoomEnabled() {
+        return zoomEnabled;
     }
 
     //exported functions
@@ -284,25 +296,31 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         clearViewPreset();
     }
 
-    function copy() {
-        const exportedUp = cameraMode === CAMERA_MODES.FLY ? new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion).normalize() : camera.up.clone();
+    function copy(
+        /* prettier-ignore */
+        sourceCamera = camera,
+        sourceTarget = orbitControls.target,
+    ) {
+        const isFlyViewport = sourceCamera === camera && cameraMode === CAMERA_MODES.FLY;
+
+        const exportedUp = isFlyViewport ? new THREE.Vector3(0, 1, 0).applyQuaternion(sourceCamera.quaternion).normalize() : sourceCamera.up.clone();
 
         const output = {
             position: {
-                x: Number(camera.position.x.toFixed(3)),
-                y: Number(camera.position.y.toFixed(3)),
-                z: Number(camera.position.z.toFixed(3)),
+                x: Number(sourceCamera.position.x.toFixed(3)),
+                y: Number(sourceCamera.position.y.toFixed(3)),
+                z: Number(sourceCamera.position.z.toFixed(3)),
             },
             quaternion: {
-                x: Number(camera.quaternion.x.toFixed(6)),
-                y: Number(camera.quaternion.y.toFixed(6)),
-                z: Number(camera.quaternion.z.toFixed(6)),
-                w: Number(camera.quaternion.w.toFixed(6)),
+                x: Number(sourceCamera.quaternion.x.toFixed(6)),
+                y: Number(sourceCamera.quaternion.y.toFixed(6)),
+                z: Number(sourceCamera.quaternion.z.toFixed(6)),
+                w: Number(sourceCamera.quaternion.w.toFixed(6)),
             },
             target: {
-                x: Number(orbitControls.target.x.toFixed(3)),
-                y: Number(orbitControls.target.y.toFixed(3)),
-                z: Number(orbitControls.target.z.toFixed(3)),
+                x: Number(sourceTarget.x.toFixed(3)),
+                y: Number(sourceTarget.y.toFixed(3)),
+                z: Number(sourceTarget.z.toFixed(3)),
             },
             up: {
                 x: Number(exportedUp.x.toFixed(6)),
@@ -316,11 +334,11 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         navigator.clipboard
             .writeText(json)
             .then(() => {
-                console.log("Copied static camera:");
+                console.log("Copied camera:");
                 console.log(json);
             })
             .catch((error) => {
-                console.warn("Could not copy static camera.");
+                console.warn("Could not copy camera.");
                 console.log(json);
                 console.error(error);
             });
@@ -372,6 +390,8 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         setInteractionEnabled,
         setTargetMarkerVisible,
         setUpMarkerVisible,
+        setZoomEnabled,
+        getZoomEnabled,
         reset,
         update,
         copy,
