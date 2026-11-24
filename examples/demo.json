@@ -6,46 +6,10 @@
         "isPlaying": true,
         "isLooping": false
     },
-    "viewport": {
-        "offsetX": 0.15,
-        "offsetY": 0
-    },
-    "cameraTrack": [
-        {
-            "time": 0,
-            "position": {
-                "x": 2.5,
-                "y": 3.5,
-                "z": 8
-            },
-            "target": {
-                "x": 0.5,
-                "y": 0.5,
-                "z": 0
-            }
-        },
-        {
-            "time": 8,
-            "position": {
-                "x": 1,
-                "y": 4,
-                "z": 10
-            },
-            "target": {
-                "x": 0,
-                "y": 2,
-                "z": 0
-            }
-        }
-    ],
     "arrowPaths": [
         {
             "name": "left-1",
-            "origin": [
-                -8,
-                1.25,
-                0
-            ],
+            "origin": [-8, 1.25, 0],
             "idle": {
                 "position": {
                     "x": 0.02,
@@ -63,46 +27,16 @@
             "initialDirection": "+x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "forward",
-                    2
-                ],
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "bendDown",
-                    2
-                ],
-                [
-                    "turnRight",
-                    1
-                ],
-                [
-                    "bendDown",
-                    1
-                ],
-                [
-                    "turnLeft",
-                    2
-                ],
-                [
-                    "bendUp",
-                    1
-                ],
-                [
-                    "turnLeft",
-                    1
-                ],
-                [
-                    "bendDown",
-                    0.8
-                ],
-                [
-                    "turnLeft",
-                    8
-                ]
+                ["forward", 2],
+                ["bendUp", 2],
+                ["bendDown", 2],
+                ["turnRight", 1],
+                ["bendDown", 1],
+                ["turnLeft", 2],
+                ["bendUp", 1],
+                ["turnLeft", 1],
+                ["bendDown", 0.8],
+                ["turnLeft", 8]
             ],
             "timing": {
                 "delay": 0,
@@ -121,50 +55,19 @@
         },
         {
             "name": "left-2",
-            "origin": [
-                -8,
-                0.85,
-                0.5
-            ],
+            "origin": [-8, 0.85, 0.5],
             "initialDirection": "+x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "forward",
-                    1
-                ],
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "bendDown",
-                    1.5
-                ],
-                [
-                    "turnLeft",
-                    1
-                ],
-                [
-                    "turnRight",
-                    2
-                ],
-                [
-                    "bendUp",
-                    1
-                ],
-                [
-                    "bendDown",
-                    1
-                ],
-                [
-                    "turnLeft",
-                    1
-                ],
-                [
-                    "bendUp",
-                    1
-                ]
+                ["forward", 1],
+                ["bendUp", 2],
+                ["bendDown", 1.5],
+                ["turnLeft", 1],
+                ["turnRight", 2],
+                ["bendUp", 1],
+                ["bendDown", 1],
+                ["turnLeft", 1],
+                ["bendUp", 1]
             ],
             "timing": {
                 "delay": 0,
@@ -183,46 +86,18 @@
         },
         {
             "name": "left-3",
-            "origin": [
-                -8,
-                0,
-                1
-            ],
+            "origin": [-8, 0, 1],
             "initialDirection": "+x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "bendUp",
-                    2
-                ],
-                [
-                    "turnLeft",
-                    1.5
-                ],
-                [
-                    "bendDown",
-                    4.5
-                ],
-                [
-                    "bendDown",
-                    2.25
-                ],
-                [
-                    "turnLeft",
-                    1
-                ],
-                [
-                    "bendDown",
-                    1.25
-                ],
-                [
-                    "bendDown",
-                    2.5
-                ],
-                [
-                    "bendUp",
-                    2.25
-                ]
+                ["bendUp", 2],
+                ["turnLeft", 1.5],
+                ["bendDown", 4.5],
+                ["bendDown", 2.25],
+                ["turnLeft", 1],
+                ["bendDown", 1.25],
+                ["bendDown", 2.5],
+                ["bendUp", 2.25]
             ],
             "timing": {
                 "delay": 0.1,
@@ -241,38 +116,16 @@
         },
         {
             "name": "right-1",
-            "origin": [
-                8,
-                1.75,
-                0
-            ],
+            "origin": [8, 1.75, 0],
             "initialDirection": "-x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "turnLeft",
-                    1.25
-                ],
-                [
-                    "forward",
-                    1.5
-                ],
-                [
-                    "bendUp",
-                    1.5
-                ],
-                [
-                    "turnRight",
-                    2
-                ],
-                [
-                    "bendUp",
-                    1
-                ],
-                [
-                    "forward",
-                    2
-                ]
+                ["turnLeft", 1.25],
+                ["forward", 1.5],
+                ["bendUp", 1.5],
+                ["turnRight", 2],
+                ["bendUp", 1],
+                ["forward", 2]
             ],
             "timing": {
                 "delay": 0,
@@ -291,38 +144,16 @@
         },
         {
             "name": "right-2",
-            "origin": [
-                8,
-                1,
-                0.5
-            ],
+            "origin": [8, 1, 0.5],
             "initialDirection": "-x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "bendDown",
-                    1
-                ],
-                [
-                    "turnRight",
-                    1.5
-                ],
-                [
-                    "forward",
-                    1.75
-                ],
-                [
-                    "bendUp",
-                    1.25
-                ],
-                [
-                    "turnLeft",
-                    2
-                ],
-                [
-                    "forward",
-                    1.5
-                ]
+                ["bendDown", 1],
+                ["turnRight", 1.5],
+                ["forward", 1.75],
+                ["bendUp", 1.25],
+                ["turnLeft", 2],
+                ["forward", 1.5]
             ],
             "timing": {
                 "delay": 0,
@@ -341,38 +172,16 @@
         },
         {
             "name": "right-3",
-            "origin": [
-                8,
-                2.5,
-                1
-            ],
+            "origin": [8, 2.5, 1],
             "initialDirection": "-x",
             "initialNormal": "+y",
             "moves": [
-                [
-                    "forward",
-                    1.25
-                ],
-                [
-                    "turnRight",
-                    1
-                ],
-                [
-                    "bendUp",
-                    1.5
-                ],
-                [
-                    "turnLeft",
-                    1.75
-                ],
-                [
-                    "bendDown",
-                    1.25
-                ],
-                [
-                    "forward",
-                    2
-                ]
+                ["forward", 1.25],
+                ["turnRight", 1],
+                ["bendUp", 1.5],
+                ["turnLeft", 1.75],
+                ["bendDown", 1.25],
+                ["forward", 2]
             ],
             "timing": {
                 "delay": 0,
@@ -389,5 +198,35 @@
                 "morphDuration": 0.75
             }
         }
-    ]
+    ],
+    "sceneObjects": [
+        {
+            "id": "scene-camera",
+            "type": "camera",
+            "animation": {
+                "intro": {
+                    "play": "camera-intro",
+                    "at": 0
+                }
+            }
+        }
+    ],
+    "sequences": {
+        "camera-intro": {
+            "duration": 8,
+            "responsiveDistance": true,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "position": [2.5, 3.5, 8],
+                    "target": [0.5, 0.5, 0]
+                },
+                {
+                    "time": 8,
+                    "position": [1, 4, 10],
+                    "target": [0, 2, 0]
+                }
+            ]
+        }
+    }
 }

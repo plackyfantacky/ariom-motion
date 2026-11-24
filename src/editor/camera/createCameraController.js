@@ -19,7 +19,7 @@ const VIEW_PRESETS = {
     bottom: [0, -1, -0.0001],
 };
 
-export function createCameraController({ camera, cameraOrbit, renderer, mountElement, scene, initialCameraTarget, hasInitialCameraState, getCameraTrack }) {
+export function createCameraController({ camera, cameraOrbit, renderer, scene, initialCameraTarget }) {
     let cameraMode = CAMERA_MODES.ORBITAL;
     let currentViewPreset = null;
 

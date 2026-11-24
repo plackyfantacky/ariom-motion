@@ -56,6 +56,7 @@ export function createCameraSequenceEvaluator(object, sequence, sequenceName) {
         position: animatesPosition ? new Vector3() : null,
         target: animatesTarget ? new Vector3() : null,
         complete: false,
+        responsiveDistance: sequence.responsiveDistance === true,
     };
 
     function apply(progress) {

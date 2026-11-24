@@ -1,7 +1,6 @@
 import * as THREE from "three";
 
 import { getStageSize } from "./stage.js";
-import { updateCameraTrack } from "./camera.js";
 
 import { createSceneObjects } from "./createSceneObjects.js";
 import { createEnvironment } from "../environment/createEnvironment.js";
@@ -18,7 +17,7 @@ import { createObjectLocator } from "../interactions/createObjectLocator.js";
 import { createObjectInteractions } from "../interactions/createObjectInteractions.js";
 
 import { updateArrowAnimations } from "../animation/updateArrowAnimations.js";
-import { applyViewportOffset, handleResize as responsiveResize, positionSceneObjectsForViewport } from "./responsive.js";
+import { handleResize as responsiveResize, positionSceneObjectsForViewport } from "./responsive.js";
 
 import { renderArrowPaths } from "../arrows/renderArrowPaths.js";
 
@@ -40,7 +39,6 @@ export function createScene(mountElement, options = {}) {
     const playback = createPlaybackController(animationSettings);
 
     let arrowPaths = options.arrowPaths || dataset.arrowPaths;
-    const cameraTrack = options.cameraTrack || dataset.cameraTrack || null;
     const stageSize = getStageSize(mountElement);
 
     const scene = new THREE.Scene();
@@ -73,11 +71,7 @@ export function createScene(mountElement, options = {}) {
         camera.lookAt(0, 0, 0);
     }
 
-    applyViewportOffset(camera, mountElement, dataset.viewport);
-
     const pathLayoutCamera = camera.clone();
-
-    applyViewportOffset(pathLayoutCamera, mountElement, dataset.viewport);
 
     pathLayoutCamera.updateProjectionMatrix();
 
@@ -93,7 +87,7 @@ export function createScene(mountElement, options = {}) {
 
     // camera
     let cameraLocked = false;
-    let orbitInteractionEnabled = !cameraTrack;
+    let orbitInteractionEnabled = true;
     let cameraAnimationEnabled = true;
 
     let cameraAnimationActive = false;
@@ -101,6 +95,7 @@ export function createScene(mountElement, options = {}) {
     let completedCameraPose = null;
 
     const cameraMovement = new THREE.Vector3();
+    const sequenceCameraPosition = new THREE.Vector3();
 
     // reusable camera orbit controls. for use in both editor and frontend modes.
     const orbitTarget = staticCamera?.target
@@ -235,12 +230,19 @@ export function createScene(mountElement, options = {}) {
         }
 
         if (pose.position) {
+            sequenceCameraPosition.copy(pose.position);
+
+            if (pose.responsiveDistance) {
+                sequenceCameraPosition.z += getCameraDistanceOffset(mountElement);
+            }
+
             if (!pose.target) {
-                cameraMovement.copy(pose.position).sub(camera.position);
+                cameraMovement.copy(sequenceCameraPosition).sub(camera.position);
+
                 orbitControls.target.add(cameraMovement);
             }
 
-            camera.position.copy(pose.position);
+            camera.position.copy(sequenceCameraPosition);
         }
 
         if (pose.target) {
@@ -277,10 +279,6 @@ export function createScene(mountElement, options = {}) {
         });
 
         applyCameraSequencePose();
-
-        if (cameraTrack && cameraAnimationEnabled && !pendingCameraPose) {
-            updateCameraTrack(mountElement, cameraTrack, camera, currentTime);
-        }
 
         if (orbitControls.enabled) {
             orbitControls.update();
@@ -324,11 +322,11 @@ export function createScene(mountElement, options = {}) {
     }
 
     function handleResize() {
+        if (pendingCameraPose?.responsiveDistance) {
+            completedCameraPose = null;
+        }
+
         responsiveResize(mountElement, [camera, pathLayoutCamera], renderer);
-
-        applyViewportOffset(camera, mountElement, dataset.viewport);
-
-        applyViewportOffset(pathLayoutCamera, mountElement, dataset.viewport);
 
         positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
 
@@ -425,10 +423,6 @@ export function createScene(mountElement, options = {}) {
 
         getArrows() {
             return arrows;
-        },
-
-        getCameraTrack() {
-            return cameraTrack;
         },
 
         setCameraAnimationEnabled(isEnabled) {

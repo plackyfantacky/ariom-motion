@@ -34,7 +34,6 @@ export function createArrowCloudEditor({
     initialCameraView,
     initialCameraDistance,
     initialCameraTarget,
-    getCameraTrack,
     getRenderedArrowItems,
     getArrows,
     onArrowPathsChange,
@@ -63,7 +62,6 @@ export function createArrowCloudEditor({
         scene,
         initialCameraTarget,
         hasInitialCameraState,
-        getCameraTrack,
         cameraFrustumVisible: preferences.get("cameraFrustumVisible"),
     });
 
