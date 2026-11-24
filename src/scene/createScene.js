@@ -17,7 +17,7 @@ import { createObjectLocator } from "../interactions/createObjectLocator.js";
 import { createObjectInteractions } from "../interactions/createObjectInteractions.js";
 
 import { updateArrowAnimations } from "../animation/updateArrowAnimations.js";
-import { handleResize as responsiveResize, positionSceneObjectsForViewport } from "./responsive.js";
+import { getCameraDistanceOffset, handleResize as responsiveResize, positionSceneObjectsForViewport } from "./responsive.js";
 
 import { renderArrowPaths } from "../arrows/renderArrowPaths.js";
 

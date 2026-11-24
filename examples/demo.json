@@ -207,6 +207,9 @@
                 "intro": {
                     "play": "camera-intro",
                     "at": 0
+                },
+                "move": {
+                    "play": "camera-move"
                 }
             }
         }
@@ -225,6 +228,23 @@
                     "time": 8,
                     "position": [1, 4, 10],
                     "target": [0, 2, 0]
+                }
+            ]
+        },
+         "camera-move": {
+            "duration": 3,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "position": [-2.795, 4.672, 2.874],
+                    "target": [-6.544, -6.725, -9.334],
+                    "cameraLocked": true
+                },
+                {
+                    "time": 3,
+                    "position": [-1.795, 5.672, 3.874],
+                    "target": [-6.544, -6.725, -9.334],
+                    "cameraLocked": false
                 }
             ]
         }
