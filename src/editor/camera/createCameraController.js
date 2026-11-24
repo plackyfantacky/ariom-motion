@@ -85,7 +85,7 @@ export function createCameraController({ camera, cameraOrbit, renderer, mountEle
         cameraPivot.copy(target);
         orbitControls = cameraOrbit.rebuild(target);
 
-        controls.addEventListener("change", handleOrbitChange);
+        orbitControls.addEventListener("change", handleOrbitChange);
     }
 
     function handleOrbitChange() {

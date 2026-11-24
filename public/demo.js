@@ -4,7 +4,7 @@ const motion = await createMotion({
     mountElement: document.querySelector("[data-ariom-motion]"),
     dataset: new URL("../examples/demo-simple.json", import.meta.url),
     editor: {
-        enabled: true,
+        enabled: false,
     },
 });
 
@@ -16,6 +16,7 @@ const playButton = document.querySelector("#demo-play-button");
 
 function handlePlayClick() {
     motion.emit("demo:play");
+    motion.playAnimation("scene-camera", "move");
 }
 
 playButton.addEventListener("click", handlePlayClick);

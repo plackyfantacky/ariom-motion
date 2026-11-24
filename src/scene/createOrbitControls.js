@@ -9,6 +9,7 @@ export function createOrbitControls({ camera, domElement, target, enabled = true
     controls.target.copy(target);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
+    controls.enableZoom = false;
     controls.enabled = enabled;
 
     // Construction can update the camera before our target is assigned.

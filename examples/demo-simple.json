@@ -181,6 +181,9 @@
                         "end": 281,
                         "unit": "vh"
                     }
+                },
+                "move": {
+                    "play": "camera-move"
                 }
             }
         },
@@ -262,6 +265,23 @@
             "keyframes": [
                 { "time": 0, "cameraLocked": true },
                 { "time": 1, "cameraLocked": false }
+            ]
+        },
+        "camera-move": {
+            "duration": 3,
+            "keyframes": [
+                {
+                    "time": 0,
+                    "position": [-2.795, 4.672, 2.874],
+                    "target": [-6.544, -6.725, -9.334],
+                    "cameraLocked": true
+                },
+                {
+                    "time": 3,
+                    "position": [-1.795, 5.672, 3.874],
+                    "target": [-6.544, -6.725, -9.334],
+                    "cameraLocked": false
+                }
             ]
         },
         "content-leave": {

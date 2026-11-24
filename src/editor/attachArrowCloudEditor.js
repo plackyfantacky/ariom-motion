@@ -14,7 +14,6 @@ export function attachArrowCloudEditor(runtime, options = {}) {
         initialCameraDistance: options.cameraDistance,
         initialCameraTarget: options.cameraTarget,
 
-        getCameraTrack: runtime.getCameraTrack,
         getRenderedArrowItems: runtime.getRenderedArrowItems,
         getArrows: runtime.getArrows,
 
@@ -28,7 +27,7 @@ export function attachArrowCloudEditor(runtime, options = {}) {
     });
 
     const unsubscribeFrame = runtime.onFrame((frame) => {
-        runtime.setCameraTrackEnabled(!editor.isCameraOverridden());
+        runtime.setCameraAnimationEnabled(!editor.isCameraOverridden());
 
         editor.update(frame);
     });
@@ -58,7 +57,7 @@ export function attachArrowCloudEditor(runtime, options = {}) {
 
         editor.destroy();
         runtime.setInteractionsEnabled(true);
-        runtime.setCameraTrackEnabled(true);
+        runtime.setCameraAnimationEnabled(true);
     }
 
     return {

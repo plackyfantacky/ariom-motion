@@ -12,15 +12,11 @@ export function createSceneObjects(
     /* prettier-ignore */
     scene,
     definitions = [],
-    { cameraOrbit } = {},
+    { camera, cameraOrbit } = {},
 ) {
     const objectsById = new Map();
 
     definitions.forEach((definition) => {
-        if (!cameraOrbit) {
-            throw new Error("Camera targets require camera controls.");
-        }
-
         if (typeof definition.id !== "string" || definition.id.trim() === "") {
             throw new Error("Scene objects require a non-empty id.");
         }
@@ -36,6 +32,8 @@ export function createSceneObjects(
 
             objectsById.set(definition.id, {
                 userData: {
+                    camera,
+                    cameraOrbit,
                     type: "camera",
                     sceneObjectId: definition.id,
                     animation: definition.animation ?? {},

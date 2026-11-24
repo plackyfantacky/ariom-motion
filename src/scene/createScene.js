@@ -91,8 +91,16 @@ export function createScene(mountElement, options = {}) {
     createShadowsController(renderer, dataset);
     createLights(scene, dataset.lighting);
 
+    // camera
     let cameraLocked = false;
     let orbitInteractionEnabled = !cameraTrack;
+    let cameraAnimationEnabled = true;
+
+    let cameraAnimationActive = false;
+    let pendingCameraPose = null;
+    let completedCameraPose = null;
+
+    const cameraMovement = new THREE.Vector3();
 
     // reusable camera orbit controls. for use in both editor and frontend modes.
     const orbitTarget = staticCamera?.target
@@ -107,7 +115,7 @@ export function createScene(mountElement, options = {}) {
     });
 
     function syncOrbitInteraction() {
-        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked;
+        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive;
     }
 
     const cameraOrbit = {
@@ -122,7 +130,7 @@ export function createScene(mountElement, options = {}) {
                 camera,
                 domElement: renderer.domElement,
                 target,
-                enabled: orbitInteractionEnabled && !cameraLocked,
+                enabled: orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive,
             });
 
             orbitControls.update();
@@ -143,9 +151,13 @@ export function createScene(mountElement, options = {}) {
         isLocked() {
             return cameraLocked;
         },
+
+        queuePose(pose) {
+            pendingCameraPose = pose;
+        },
     };
 
-    const sceneObjects = createSceneObjects(scene, dataset.sceneObjects, { cameraOrbit });
+    const sceneObjects = createSceneObjects(scene, dataset.sceneObjects, { camera, cameraOrbit });
 
     positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
     const objectAnimations = createSceneObjectAnimations(sceneObjects, dataset.sequences, events);
@@ -163,8 +175,6 @@ export function createScene(mountElement, options = {}) {
     const beforeRenderListeners = new Set();
     const frameListeners = new Set();
     const pathRebuildListeners = new Set();
-
-    let cameraTrackEnabled = true;
 
     let renderedArrowItems = [];
     let arrows = [];
@@ -209,6 +219,40 @@ export function createScene(mountElement, options = {}) {
         });
     }
 
+    function applyCameraSequencePose() {
+        const pose = pendingCameraPose;
+
+        if (!pose || !pose.complete) {
+            completedCameraPose = null;
+        }
+
+        cameraAnimationActive = Boolean(cameraAnimationEnabled && pose && (!pose.complete || completedCameraPose !== pose));
+
+        syncOrbitInteraction();
+
+        if (!cameraAnimationActive) {
+            return;
+        }
+
+        if (pose.position) {
+            if (!pose.target) {
+                cameraMovement.copy(pose.position).sub(camera.position);
+                orbitControls.target.add(cameraMovement);
+            }
+
+            camera.position.copy(pose.position);
+        }
+
+        if (pose.target) {
+            orbitControls.target.copy(pose.target);
+            camera.lookAt(orbitControls.target);
+        }
+
+        if (pose.complete) {
+            completedCameraPose = pose;
+        }
+    }
+
     function animate() {
         if (isDestroyed) {
             return;
@@ -221,6 +265,7 @@ export function createScene(mountElement, options = {}) {
         const currentTime = playback.update(deltaTime);
         const ambientTime = timer.getElapsed();
 
+        pendingCameraPose = null;
         objectAnimations.update(currentTime, ambientTime);
 
         frameListeners.forEach((listener) => {
@@ -231,7 +276,9 @@ export function createScene(mountElement, options = {}) {
             });
         });
 
-        if (cameraTrack && cameraTrackEnabled) {
+        applyCameraSequencePose();
+
+        if (cameraTrack && cameraAnimationEnabled && !pendingCameraPose) {
             updateCameraTrack(mountElement, cameraTrack, camera, currentTime);
         }
 
@@ -350,7 +397,7 @@ export function createScene(mountElement, options = {}) {
 
     handleScroll();
     objectAnimations.update(playback.state.currentTime, 0);
-    
+
     animationFrameId = requestAnimationFrame(animate);
 
     return {
@@ -384,8 +431,12 @@ export function createScene(mountElement, options = {}) {
             return cameraTrack;
         },
 
-        setCameraTrackEnabled(isEnabled) {
-            cameraTrackEnabled = isEnabled;
+        setCameraAnimationEnabled(isEnabled) {
+            if (isEnabled && !cameraAnimationEnabled) {
+                completedCameraPose = null;
+            }
+
+            cameraAnimationEnabled = isEnabled;
         },
 
         onFrame(listener) {
