@@ -4,6 +4,7 @@ export function attachArrowCloudEditor(runtime, options = {}) {
     const editor = createArrowCloudEditor({
         playback: runtime.playback,
         camera: runtime.camera,
+        cameraOrbit: runtime.cameraOrbit,
         renderer: runtime.renderer,
         mountElement: runtime.mountElement,
         scene: runtime.scene,

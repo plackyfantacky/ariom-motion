@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 import { createFlyControls } from "./createFlyControls.js";
 import { createCameraTargetMarker } from "./createCameraTargetMarker.js";
@@ -20,7 +19,7 @@ const VIEW_PRESETS = {
     bottom: [0, -1, -0.0001],
 };
 
-export function createCameraController({ camera, renderer, mountElement, scene, initialCameraTarget, hasInitialCameraState, getCameraTrack }) {
+export function createCameraController({ camera, cameraOrbit, renderer, mountElement, scene, initialCameraTarget, hasInitialCameraState, getCameraTrack }) {
     let cameraMode = CAMERA_MODES.ORBITAL;
     let currentViewPreset = null;
 
@@ -34,21 +33,8 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     const cameraDirection = new THREE.Vector3();
     const cameraUp = new THREE.Vector3();
 
-    // if (hasInitialCameraState) {
-    //     cameraUp.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
-
-    //     camera.up.copy(cameraUp);
-    // } else {
-    //     camera.up.set(0, 1, 0);
-    // }
-
     let orbitControls = createOrbitControls();
 
-    orbitControls.target.copy(cameraPivot);
-
-    orbitControls.enableDamping = true;
-    orbitControls.dampingFactor = 0.08;
-    orbitControls.enabled = true;
     orbitControls.update();
     orbitControls.saveState();
 
@@ -84,13 +70,9 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     //helper functions
 
     function createOrbitControls() {
-        const controls = new OrbitControls(camera, renderer.domElement);
+        const controls = cameraOrbit.getControls();
 
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.08;
-        controls.enabled = interactionEnabled && cameraMode === CAMERA_MODES.ORBITAL;
-
-        controls.target.copy(cameraPivot);
+        cameraOrbit.setEnabled(interactionEnabled && cameraMode === CAMERA_MODES.ORBITAL);
 
         controls.addEventListener("change", handleOrbitChange);
 
@@ -99,14 +81,11 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
 
     function rebuildOrbitControls(target) {
         orbitControls.removeEventListener("change", handleOrbitChange);
-        orbitControls.dispose();
 
-        orbitControls = createOrbitControls();
-
-        orbitControls.target.copy(target);
         cameraPivot.copy(target);
+        orbitControls = cameraOrbit.rebuild(target);
 
-        orbitControls.update();
+        controls.addEventListener("change", handleOrbitChange);
     }
 
     function handleOrbitChange() {
@@ -191,6 +170,10 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     }
 
     function setMode(nextCameraMode) {
+        if (cameraOrbit.isLocked()) {
+            return;
+        }
+
         if (cameraMode === nextCameraMode) {
             return;
         }
@@ -223,6 +206,10 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     }
 
     function setViewPreset(presetName, distanceOverride = null) {
+        if (cameraOrbit.isLocked()) {
+            return;
+        }
+
         const preset = VIEW_PRESETS[presetName];
 
         if (!preset) {
@@ -272,12 +259,16 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     function setInteractionEnabled(isEnabled) {
         interactionEnabled = isEnabled;
 
-        orbitControls.enabled = isEnabled && cameraMode === CAMERA_MODES.ORBITAL;
+        cameraOrbit.setEnabled(isEnabled && cameraMode === CAMERA_MODES.ORBITAL);
 
-        flyControls.enabled = isEnabled && cameraMode === CAMERA_MODES.FLY;
+        flyControls.enabled = isEnabled && !cameraOrbit.isLocked() && cameraMode === CAMERA_MODES.FLY;
     }
 
     function reset() {
+        if (cameraOrbit.isLocked()) {
+            return;
+        }
+
         cameraMode = CAMERA_MODES.ORBITAL;
 
         camera.position.copy(initialCameraPosition);
@@ -336,6 +327,12 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
     }
 
     function update(deltaTime, currentTime) {
+        setInteractionEnabled(interactionEnabled);
+
+        if (cameraOrbit.isLocked()) {
+            return;
+        }
+
         if (cameraMode === CAMERA_MODES.TRACKED) {
             return;
         }
@@ -347,8 +344,6 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
 
             orbitControls.target.copy(camera.position).addScaledVector(cameraDirection, cameraTargetDistance);
         } else {
-            orbitControls.update();
-
             cameraTargetDistance = camera.position.distanceTo(orbitControls.target);
         }
 
@@ -364,7 +359,7 @@ export function createCameraController({ camera, renderer, mountElement, scene, 
 
     function destroy() {
         orbitControls.removeEventListener("change", handleOrbitChange);
-        orbitControls.dispose();
+        cameraOrbit.setEnabled(false);
         flyControls.dispose();
     }
 

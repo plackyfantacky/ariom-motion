@@ -8,6 +8,7 @@ import { createEnvironment } from "../environment/createEnvironment.js";
 import { createLights } from "../lighting/createLights.js";
 import { createShadowsController } from "../lighting/createShadowsController.js";
 import { createBackgroundShader } from "../shaders/createBackgroundShader.js";
+import { createOrbitControls } from "./createOrbitControls.js";
 
 import { createEventBus } from "../events/createEventBus.js";
 import { createPlaybackController } from "../animation/createPlaybackController.js";
@@ -97,6 +98,60 @@ export function createScene(mountElement, options = {}) {
 
     mountElement.appendChild(renderer.domElement);
 
+    let cameraLocked = false;
+    let orbitInteractionEnabled = !cameraTrack;
+
+    // reusable camera orbit controls. for use in both editor and frontend modes.
+    const orbitTarget = staticCamera?.target
+        ? new THREE.Vector3(staticCamera.target.x, staticCamera.target.y, staticCamera.target.z)
+        : camera.position.clone().addScaledVector(camera.getWorldDirection(new THREE.Vector3()), 10);
+
+    let orbitControls = createOrbitControls({
+        camera,
+        domElement: renderer.domElement,
+        target: orbitTarget,
+        enabled: orbitInteractionEnabled && !cameraLocked,
+    });
+
+    function syncOrbitInteraction() {
+        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked;
+    }
+
+    const cameraOrbit = {
+        getControls() {
+            return orbitControls;
+        },
+
+        rebuild(target) {
+            orbitControls.dispose();
+
+            orbitControls = createOrbitControls({
+                camera,
+                domElement: renderer.domElement,
+                target,
+                enabled: orbitInteractionEnabled && !cameraLocked,
+            });
+
+            orbitControls.update();
+
+            return orbitControls;
+        },
+
+        setEnabled(isEnabled) {
+            orbitInteractionEnabled = isEnabled;
+            syncOrbitInteraction();
+        },
+
+        setLocked(isLocked) {
+            cameraLocked = isLocked;
+            syncOrbitInteraction();
+        },
+
+        isLocked() {
+            return cameraLocked;
+        },
+    };
+
     const arrowMaterial = new THREE.MeshStandardMaterial({
         color: 0xff9d2a,
         roughness: 0.45,
@@ -178,6 +233,10 @@ export function createScene(mountElement, options = {}) {
             updateCameraTrack(mountElement, cameraTrack, camera, currentTime);
         }
 
+        if (orbitControls.enabled) {
+            orbitControls.update();
+        }
+
         updateArrowAnimations({
             renderedArrowItems,
             currentTime,
@@ -234,6 +293,8 @@ export function createScene(mountElement, options = {}) {
         if (isDestroyed) {
             return;
         }
+
+        orbitControls.dispose();
 
         events.clear();
 
@@ -293,6 +354,7 @@ export function createScene(mountElement, options = {}) {
     return {
         scene,
         camera,
+        cameraOrbit,
         renderer,
         mountElement,
         on: events.on,

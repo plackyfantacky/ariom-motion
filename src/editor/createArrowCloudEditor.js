@@ -26,11 +26,11 @@ import { createTimelineControls } from "./timeline/createTimelineControls.js";
 export function createArrowCloudEditor({
     playback,
     camera,
+    cameraOrbit,
     renderer,
     mountElement,
     scene,
     arrowPaths,
-    animationSettings,
     initialCameraView,
     initialCameraDistance,
     initialCameraTarget,
@@ -57,6 +57,7 @@ export function createArrowCloudEditor({
     //main actions
     const cameraController = createCameraController({
         camera,
+        cameraOrbit,
         renderer,
         mountElement,
         scene,
