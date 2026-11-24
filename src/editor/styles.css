@@ -374,6 +374,13 @@
     }
 }
 
+/* Authoring override: preserve layout and animation state. */
+.editor-dom-hidden,
+.editor-dom-hidden * {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 /** scene **/
 
 .editor-scene-controls__toggle {

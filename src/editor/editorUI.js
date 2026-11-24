@@ -15,6 +15,7 @@ const defaults = {
     sceneOriginVisible: true,
     uiVisible: true,
     cameraMode: "orbital",
+    domVisible: true,
 };
 
 export function createEditorPreferences() {

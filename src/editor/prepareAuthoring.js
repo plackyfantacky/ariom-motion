@@ -28,6 +28,16 @@ export function prepareAuthoring(options = {}) {
                     cameraTarget: dataset.staticCamera?.target,
                     hasInitialCameraState: Boolean(dataset.staticCamera),
                     onDatasetChange: selectEditorDataset,
+                    domElements: [
+                        ...new Set(
+                            (dataset.sceneObjects ?? [])
+                                .filter((definition) => definition.type === "dom")
+                                .map((definition) => {
+                                    return runtime.getSceneObject(definition.id)?.userData.element;
+                                })
+                                .filter(Boolean),
+                        ),
+                    ],
                 });
             } catch (error) {
                 stylesheet.remove();

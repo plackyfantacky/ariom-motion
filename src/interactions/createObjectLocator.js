@@ -6,7 +6,7 @@ export function createObjectLocator(scene, camera, element) {
     const vertex = new THREE.Vector3();
     const modelViewMatrix = new THREE.Matrix4();
 
-    function intersectMesh(object) {
+    function intersectMesh(object, camera) {
         const perspective = object.userData.projection?.perspective ?? 1;
 
         modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse, object.matrixWorld);
@@ -56,6 +56,8 @@ export function createObjectLocator(scene, camera, element) {
     }
 
     function getObjectAtPointer(event) {
+        const camera = typeof cameraSource === "function" ? cameraSource() : cameraSource;
+
         const bounds = element.getBoundingClientRect();
 
         if (
@@ -92,7 +94,7 @@ export function createObjectLocator(scene, camera, element) {
                 });
 
                 if (isVisible) {
-                    const hit = intersectMesh(object)[0];
+                    const hit = intersectMesh(object, camera)[0];
 
                     if (hit && (!nearestHit || hit.distance < nearestHit.distance)) {
                         nearestHit = hit;

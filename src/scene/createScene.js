@@ -71,6 +71,7 @@ export function createScene(mountElement, options = {}) {
         camera.lookAt(0, 0, 0);
     }
 
+    let viewportCamera = null;
     const pathLayoutCamera = camera.clone();
 
     pathLayoutCamera.updateProjectionMatrix();
@@ -108,10 +109,6 @@ export function createScene(mountElement, options = {}) {
         target: orbitTarget,
         enabled: orbitInteractionEnabled && !cameraLocked,
     });
-
-    function syncOrbitInteraction() {
-        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive;
-    }
 
     const cameraOrbit = {
         getControls() {
@@ -176,7 +173,12 @@ export function createScene(mountElement, options = {}) {
 
     rebuildArrowPaths();
 
-    const getObjectAtPointer = createObjectLocator(scene, camera, renderer.domElement);
+    /* prettier-ignore */
+    const getObjectAtPointer = createObjectLocator(
+        scene, 
+        getRenderCamera, 
+        renderer.domElement
+    );
 
     const objectInteractions = createObjectInteractions(renderer.domElement, {
         getObjectAtPointer,
@@ -188,6 +190,26 @@ export function createScene(mountElement, options = {}) {
     let isDestroyed = false;
 
     // helpers
+
+    function getRenderCamera() {
+        return viewportCamera ?? camera;
+    }
+
+    function setViewportCamera(nextCamera) {
+        viewportCamera = nextCamera;
+
+        if (viewportCamera) {
+            const size = getStageSize(mountElement);
+
+            viewportCamera.aspect = size.width / size.height;
+            viewportCamera.updateProjectionMatrix();
+        }
+    }
+
+    function syncOrbitInteraction() {
+        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive;
+    }
+
     function rebuildArrowPaths() {
         const renderState = renderArrowPaths({
             scene,
@@ -309,7 +331,7 @@ export function createScene(mountElement, options = {}) {
                 }
             });
 
-            renderer.render(scene, camera);
+            renderer.render(scene, getRenderCamera());
         } finally {
             restoreCallbacks.reverse().forEach((restore) => {
                 restore();
@@ -326,7 +348,13 @@ export function createScene(mountElement, options = {}) {
             completedCameraPose = null;
         }
 
-        responsiveResize(mountElement, [camera, pathLayoutCamera], renderer);
+        const cameras = [camera, pathLayoutCamera];
+
+        if (viewportCamera) {
+            cameras.push(viewportCamera);
+        }
+
+        responsiveResize(mountElement, cameras, renderer);
 
         positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
 
@@ -407,6 +435,13 @@ export function createScene(mountElement, options = {}) {
         on: events.on,
         emit: events.emit,
         playback,
+        setInteractionsEnabled: objectInteractions.setEnabled,
+        playAnimation: objectAnimations.play,
+        seekAnimation: objectAnimations.seek,
+        setAnimationDirection: objectAnimations.setDirection,
+        setViewportCamera,
+        resize: handleResize,
+        destroy,
 
         getArrowPaths() {
             return arrowPaths;
@@ -460,14 +495,5 @@ export function createScene(mountElement, options = {}) {
         getSceneObject(objectId) {
             return sceneObjects.get(objectId) ?? null;
         },
-
-        setInteractionsEnabled: objectInteractions.setEnabled,
-
-        playAnimation: objectAnimations.play,
-        seekAnimation: objectAnimations.seek,
-        setAnimationDirection: objectAnimations.setDirection,
-
-        resize: handleResize,
-        destroy,
     };
 }

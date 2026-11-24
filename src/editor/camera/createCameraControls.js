@@ -3,25 +3,29 @@ import cameraControlsTemplate from "./cameraControls.html";
 import { createPanelToggle } from "../editorUI";
 
 export function createCameraControls({
-    initialExpanded = true,
-    onPanelExpandedChange = () => {},
-    getCameraMode = () => "orbital",
-    getCameraView = () => null,
-    cameraZoomEnabled = false,
-    onCameraZoomChange = () => {},
-    getCameraLocked = () => false,
-    onCameraModeChange = () => {},
-    onCameraViewChange = () => {},
-    onResetCamera = () => {},
-    onCopySceneCamera = () => {},
-    onCopyCurrentViewport = () => {},
-    onCameraTargetVisibilityChange = () => {},
-    onCameraUpVisibilityChange = () => {},
-    container = document.body,
+    cameraFrustumVisible = false,
+    cameraMeshVisible = true,
     cameraTargetVisible = true,
     cameraUpVisible = true,
+    cameraZoomEnabled = false,
+    container = document.body,
+    domVisible = true,
+    getCameraLocked = () => false,
+    getCameraMode = () => "orbital",
+    getCameraView = () => null,
+    initialExpanded = true,
     onCameraFrustumVisibilityChange = () => {},
-    cameraFrustumVisible = false,
+    onCameraMeshVisibilityChange = () => {},
+    onCameraModeChange = () => {},
+    onCameraTargetVisibilityChange = () => {},
+    onCameraUpVisibilityChange = () => {},
+    onCameraViewChange = () => {},
+    onCameraZoomChange = () => {},
+    onCopyCurrentViewport = () => {},
+    onCopySceneCamera = () => {},
+    onDomVisibilityChange = () => {},
+    onPanelExpandedChange = () => {},
+    onResetCamera = () => {},
 } = {}) {
     const template = document.createElement("template");
     template.innerHTML = cameraControlsTemplate;
@@ -41,18 +45,19 @@ export function createCameraControls({
 
     /* selectors */
 
+    const cameraFrustumVisibilityInput = controlsContainer.querySelector("[data-camera-frustum-visible]");
+    const cameraMeshVisibilityInput = controlsContainer.querySelector("[data-camera-mesh-visible]");
     const cameraModeButtons = [...controlsContainer.querySelectorAll("[data-camera-mode]")];
-    const cameraViewButtons = [...controlsContainer.querySelectorAll("[data-camera-view]")];
-    const resetCameraButton = controlsContainer.querySelector('[data-action="reset-camera"]');
-    const copySceneCameraButton = controlsContainer.querySelector('[data-action="copy-scene-camera"]');
-    const copyCurrentViewportButton = controlsContainer.querySelector('[data-action="copy-current-viewport"]');
     const cameraTargetVisibilityInput = controlsContainer.querySelector("[data-camera-target-visible]");
     const cameraUpVisibilityInput = controlsContainer.querySelector("[data-camera-up-visible]");
-    const cameraFrustumVisibilityInput = controlsContainer.querySelector("[data-camera-frustum-visible]");
-
-    const orbitalOptions = controlsContainer.querySelector("[data-camera-orbital-options]");
-    const zoomEnabledInput = controlsContainer.querySelector("[data-camera-zoom-enabled]");
+    const cameraViewButtons = [...controlsContainer.querySelectorAll("[data-camera-view]")];
+    const copyCurrentViewportButton = controlsContainer.querySelector('[data-action="copy-current-viewport"]');
+    const copySceneCameraButton = controlsContainer.querySelector('[data-action="copy-scene-camera"]');
+    const domVisibilityInput = controlsContainer.querySelector("[data-dom-visible]");
     const lockNotice = controlsContainer.querySelector("[data-camera-lock-notice]");
+    const orbitalOptions = controlsContainer.querySelector("[data-camera-orbital-options]");
+    const resetCameraButton = controlsContainer.querySelector('[data-action="reset-camera"]');
+    const zoomEnabledInput = controlsContainer.querySelector("[data-camera-zoom-enabled]");
 
     /* listeners */
 
@@ -91,6 +96,10 @@ export function createCameraControls({
         onCameraFrustumVisibilityChange(cameraFrustumVisibilityInput.checked);
     });
 
+    cameraMeshVisibilityInput.addEventListener("change", handleCameraMeshVisibilityChange);
+
+    domVisibilityInput.addEventListener("change", handleDomVisibilityChange);
+
     /* handlers/helpers */
 
     function updateCameraModeButtons() {
@@ -115,16 +124,20 @@ export function createCameraControls({
     }
 
     function updateCameraLock() {
-        const isLocked = getCameraLocked();
-
-        lockNotice.hidden = getCameraMode() !== "orbital" || !isLocked;
-        zoomEnabledInput.disabled = isLocked;
+        lockNotice.hidden = !getCameraLocked();
     }
 
+    function handleDomVisibilityChange() {
+        onDomVisibilityChange(domVisibilityInput.checked);
+    }
 
+    function handleCameraMeshVisibilityChange() {
+        onCameraMeshVisibilityChange(cameraMeshVisibilityInput.checked);
+    }
 
     /* runtime defaults */
     zoomEnabledInput.checked = cameraZoomEnabled;
+    domVisibilityInput.checked = domVisible;
 
     updateCameraModeButtons();
     updateCameraViewButtons();
@@ -133,6 +146,7 @@ export function createCameraControls({
     cameraTargetVisibilityInput.checked = cameraTargetVisible;
     cameraUpVisibilityInput.checked = cameraUpVisible;
     cameraFrustumVisibilityInput.checked = cameraFrustumVisible;
+    cameraMeshVisibilityInput.checked = cameraMeshVisible;
 
     container.appendChild(controlsContainer);
 
@@ -143,6 +157,8 @@ export function createCameraControls({
 
         destroy() {
             zoomEnabledInput.removeEventListener("change", handleZoomChange);
+            domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
+            cameraMeshVisibilityInput.removeEventListener("change", handleCameraMeshVisibilityChange);
             controlsContainer.remove();
             panelToggle.destroy();
         },

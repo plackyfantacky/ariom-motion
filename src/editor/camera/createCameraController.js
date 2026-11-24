@@ -215,6 +215,10 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
 
             rebuildOrbitControls(target);
         }
+
+        if (cameraMode === CAMERA_MODES.ORBITAL && previousCameraMode === CAMERA_MODES.TRACKED) {
+            rebuildOrbitControls(orbitControls.target.clone());
+        }
     }
 
     function setViewPreset(presetName, distanceOverride = null) {
