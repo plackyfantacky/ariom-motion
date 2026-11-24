@@ -90,64 +90,10 @@
             "z": 0
         }
     },
-    "cameraTrack": [
-        {
-            "time": 0,
-            "position": {
-                "x": 0,
-                "y": 5,
-                "z": 12
-            },
-            "target": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            }
-        },
-        {
-            "time": 3,
-            "position": {
-                "x": -2,
-                "y": 4,
-                "z": 9
-            },
-            "target": {
-                "x": 0,
-                "y": 0.5,
-                "z": 0
-            }
-        },
-        {
-            "time": 6,
-            "position": {
-                "x": 2.5,
-                "y": 3.5,
-                "z": 8
-            },
-            "target": {
-                "x": 0.5,
-                "y": 0.5,
-                "z": 0
-            }
-        },
-        {
-            "time": 8,
-            "position": {
-                "x": 1,
-                "y": 4,
-                "z": 10
-            },
-            "target": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-            }
-        }
-    ],
     "arrowPaths": [
         {
             "name": "a",
-            "origin": [-7, 0, -3],
+            "origin": [-7.5, 0, -3],
             "initialDirection": "-x",
             "initialNormal": "+y",
             "moves": [
@@ -164,7 +110,7 @@
         },
         {
             "name": "r",
-            "origin": [-6.5, 0.5, -4],
+            "origin": [-6.7, 0.5, -3.5],
             "initialDirection": "-z",
             "initialNormal": "+y",
             "moves": [
@@ -178,7 +124,7 @@
         },
         {
             "name": "i",
-            "origin": [-5, 0, -2],
+            "origin": [-5.7, 0, -2],
             "initialDirection": "-z",
             "initialNormal": "+y",
             "moves": [["forward", 2.5]],
@@ -188,8 +134,8 @@
             }
         },
         {
-            "name": "path-1",
-            "origin": [-3.5, 0.5, -2],
+            "name": "o",
+            "origin": [-4.1, 0.5, -2],
             "initialDirection": "+x",
             "initialNormal": "+y",
             "moves": [
@@ -204,8 +150,8 @@
             }
         },
         {
-            "name": "path-2",
-            "origin": [-2.5, 0, -3.5],
+            "name": "m",
+            "origin": [-2.75, 0, -1.5],
             "initialDirection": "-z",
             "initialNormal": "+y",
             "moves": [
@@ -222,5 +168,112 @@
                 "duration": 3
             }
         }
-    ]
+    ],
+    "sceneObjects": [
+        {
+            "id": "introduction",
+            "type": "dom",
+            "element": "demo-introduction",
+            "animation": {
+                "leave": {
+                    "play": "content-leave",
+                    "scroll": {
+                        "start": 0,
+                        "end": 65,
+                        "unit": "vh"
+                    }
+                }
+            }
+        },
+        {
+            "id": "integration",
+            "type": "dom",
+            "element": "demo-integration",
+            "animation": {
+                "pass": {
+                    "play": "content-pass",
+                    "scroll": {
+                        "start": 35,
+                        "end": 175,
+                        "unit": "vh"
+                    }
+                }
+            }
+        },
+        {
+            "id": "interactions",
+            "type": "dom",
+            "element": "demo-interactions",
+            "animation": {
+                "pass": {
+                    "play": "content-pass",
+                    "scroll": {
+                        "start": 135,
+                        "end": 275,
+                        "unit": "vh"
+                    }
+                }
+            }
+        },
+        {
+            "id": "authoring",
+            "type": "dom",
+            "element": "demo-authoring",
+            "animation": {
+                "enter": {
+                    "play": "content-enter",
+                    "scroll": {
+                        "start": 235,
+                        "end": 280,
+                        "unit": "vh"
+                    }
+                }
+            }
+        },
+        {
+            "id": "feedback",
+            "type": "dom",
+            "element": "demo-feedback",
+            "animation": {
+                "respond": {
+                    "play": "content-response",
+                    "on": "demo:play"
+                }
+            }
+        }
+    ],
+    "sequences": {
+        "content-leave": {
+            "duration": 1,
+            "keyframes": [
+                { "time": 0, "translate": [0, 0], "opacity": 1 },
+                { "time": 1, "translate": [0, -48], "opacity": 0 }
+            ]
+        },
+        "content-pass": {
+            "duration": 1,
+            "keyframes": [
+                { "time": 0, "translate": [0, 48], "opacity": 0 },
+                { "time": 0.3, "translate": [0, 0], "opacity": 1 },
+                { "time": 0.7, "translate": [0, 0], "opacity": 1 },
+                { "time": 1, "translate": [0, -48], "opacity": 0 }
+            ]
+        },
+        "content-enter": {
+            "duration": 1,
+            "keyframes": [
+                { "time": 0, "translate": [0, 48], "opacity": 0 },
+                { "time": 1, "translate": [0, 0], "opacity": 1 }
+            ]
+        },
+        "content-response": {
+            "duration": 2,
+            "keyframes": [
+                { "time": 0, "translate": [0, 0], "opacity": 1 },
+                { "time": 0.5, "translate": [32, -24], "opacity": 0.5 },
+                { "time": 1.2, "translate": [-12, 8], "opacity": 1 },
+                { "time": 2, "translate": [0, 0], "opacity": 1 }
+            ]
+        }
+    }
 }

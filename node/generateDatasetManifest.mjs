@@ -1,7 +1,7 @@
 import { readdir, mkdir, readFile, writeFile, watch } from "node:fs/promises";
 import { dirname } from "node:path";
 
-const dataDirectory = "src/data";
+const dataDirectory = "examples";
 const manifestPath = "src/generated/datasets.json";
 
 async function generateManifest() {

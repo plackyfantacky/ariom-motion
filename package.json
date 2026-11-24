@@ -1,12 +1,12 @@
 {
     "name": "ariom-motion",
-    "author": "A data-driven animation system for interactive web scenes.",
-    "version": "1.0.0",
-    "main": "index.js",
+    "author": "Adam Trickett",
+    "version": "0.0.1",
+    "main": "./dist/ariom-motion.js",
     "scripts": {
         "watch": "node node/build.mjs development --watch",
         "watch:production": "node node/build.mjs production --watch",
-        "serve": "browser-sync start --server . --files 'index.html, public/**/*, src/data/**/*.json, dist/**/*'",
+        "serve": "browser-sync start --server . --files 'index.html, public/**/*, examples/**/*.json, dist/**/*'",
         "dev": "npm-run-all --parallel watch watch:datasets serve",
         "dev:prod": "npm-run-all --parallel watch:production serve",
         "build": "node node/build.mjs production",
@@ -16,7 +16,7 @@
     },
     "keywords": [],
     "license": "ISC",
-    "description": "",
+    "description": "A data-driven animation system for interactive web scenes.",
     "dependencies": {
         "esbuild": "^0.28.1",
         "three": "^0.184.0"

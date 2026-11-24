@@ -8,12 +8,79 @@
         <title>Ariom Motion</title>
     </head>
     <body>
-        <div data-ariom-motion></div>
-        <section id="portfolio-intro" class="portfolio-intro">
-            <h1>Design meets development.</h1>
-            <p>A little content to test moving HTML alongside the scene.</p>
-        </section>
+        <div data-ariom-motion aria-hidden="true"></div>
 
-        <script type="module" src="./public/demo.js"></script>
+<main class="demo-content">
+    <section class="demo-step">
+        <div id="demo-introduction" class="demo-card">
+            <p class="demo-eyebrow">Ariom Motion</p>
+            <h1>Interactive scenes, defined in data.</h1>
+            <p>
+                A data-driven animation system connecting 3D scenes,
+                HTML content and user interactions.
+            </p>
+            <p class="demo-hint">Scroll to explore the integration.</p>
+        </div>
+    </section>
+
+    <section class="demo-step">
+        <div id="demo-integration" class="demo-card">
+            <p class="demo-eyebrow">Browser integration</p>
+            <h2>Supply a scene. Choose its home.</h2>
+            <p>
+                Load the browser module, provide a mount element and
+                supply your dataset as a JSON URL or JavaScript object.
+            </p>
+            <pre><code>const motion = await createMotion({
+    mountElement: document.querySelector("#scene"),
+    dataset: "./scene.json",
+});</code></pre>
+            <p>
+                The website supplies its markup. The scene dataset
+                defines how that content moves.
+            </p>
+        </div>
+    </section>
+
+    <section class="demo-step">
+        <div id="demo-interactions" class="demo-card">
+            <p class="demo-eyebrow">Events and control</p>
+            <h2>Give the scene something to respond to.</h2>
+            <p>
+                Named events can connect page controls with animation
+                sequences defined in the dataset.
+            </p>
+            <button id="demo-play-button" type="button">
+                Play a DOM sequence
+            </button>
+            <p id="demo-feedback">
+                This text moves when you activate the button.
+            </p>
+            <pre><code>motion.emit("demo:play");</code></pre>
+        </div>
+    </section>
+
+    <section class="demo-step">
+        <div id="demo-authoring" class="demo-card">
+            <p class="demo-eyebrow">Development editor</p>
+            <h2>Author with tools. Ship the runtime.</h2>
+            <p>
+                Development builds can enable the editor through
+                startup options. Production builds exclude its code
+                and styles.
+            </p>
+            <pre><code>editor: {
+    enabled: true,
+}</code></pre>
+            <p>
+                Scroll back up to reverse the content transitions.
+                The runtime and scene JSON can be updated independently
+                of the consuming website’s build.
+            </p>
+        </div>
+    </section>
+</main>
+
+<script type="module" src="./public/demo.js"></script>
     </body>
 </html>

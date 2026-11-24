@@ -9,7 +9,7 @@ export function prepareAuthoring(options = {}) {
     const urlOptions = readEditorUrlOptions(null);
 
     return {
-        datasetSource: urlOptions.datasetName ? `./src/data/${urlOptions.datasetName}.json` : null,
+        datasetSource: urlOptions.datasetName ? `./examples/${urlOptions.datasetName}.json` : null,
 
         attach(runtime, dataset) {
             const stylesheet = document.createElement("link");

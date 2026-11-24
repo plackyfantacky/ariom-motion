@@ -1,6 +1,8 @@
 html {
     margin: 0;
     background: #111;
+    color: #fff;
+    font-family: system-ui, sans-serif;
 }
 
 body {
@@ -22,23 +24,83 @@ canvas {
     height: 100%;
 }
 
-/* temp */
-.portfolio-intro {
-    position: fixed;
-    top: 35vh;
-    left: 8vw;
+.demo-content {
+    position: relative;
     z-index: 1;
-    max-width: 32rem;
-    color: #fff;
-    font-family: sans-serif;
+    pointer-events: none;
 }
 
-.portfolio-intro h1 {
+.demo-step {
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: grid;
+    align-items: end;
+    padding: 8vh 6vw;
+}
+
+.demo-card {
+    box-sizing: border-box;
+    width: min(100%, 42rem);
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 1rem;
+    background: rgb(24 18 14 / 88%);
+    box-shadow: 0 1rem 3rem rgb(0 0 0 / 15%);
+    pointer-events: auto;
+}
+
+.demo-eyebrow {
     margin: 0 0 1rem;
-    font-size: clamp(2rem, 5vw, 4rem);
+    color: #ffc783;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
 
-.portfolio-intro p {
-    font-size: 1.125rem;
-    line-height: 1.5;
+.demo-card h1,
+.demo-card h2 {
+    margin: 0 0 1.25rem;
+    line-height: 1.1;
+    text-wrap: balance;
+}
+
+.demo-card h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.demo-card h2 {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+.demo-card p {
+    line-height: 1.65;
+}
+
+.demo-hint {
+    color: #ffc783;
+}
+
+.demo-card pre {
+    overflow-x: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: rgb(0 0 0 / 35%);
+    line-height: 1.6;
+}
+
+.demo-card button {
+    padding: 0.8rem 1.1rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: #ffc783;
+    color: #24180d;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.demo-card button:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 4px;
 }
