@@ -151,7 +151,7 @@
         },
         {
             "name": "m",
-            "origin": [-2.75, 0, -1.5],
+            "origin": [-3, 0, -3.75],
             "initialDirection": "-z",
             "initialNormal": "+y",
             "moves": [
@@ -170,6 +170,20 @@
         }
     ],
     "sceneObjects": [
+        {
+            "id": "scene-camera",
+            "type": "camera",
+            "animation": {
+                "allow-orbit": {
+                    "play": "camera-interaction",
+                    "scroll": {
+                        "start": 280,
+                        "end": 281,
+                        "unit": "vh"
+                    }
+                }
+            }
+        },
         {
             "id": "introduction",
             "type": "dom",
@@ -243,6 +257,13 @@
         }
     ],
     "sequences": {
+        "camera-interaction": {
+            "duration": 1,
+            "keyframes": [
+                { "time": 0, "cameraLocked": true },
+                { "time": 1, "cameraLocked": false }
+            ]
+        },
         "content-leave": {
             "duration": 1,
             "keyframes": [

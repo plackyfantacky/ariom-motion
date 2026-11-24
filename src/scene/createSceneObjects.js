@@ -8,16 +8,42 @@ import { createIdleMotion } from "../animation/createIdleMotion.js";
 
 import { createGeometryModifiers } from "../primitives/geometry/createGeometryModifiers.js";
 
-export function createSceneObjects(scene, definitions = []) {
+export function createSceneObjects(
+    /* prettier-ignore */
+    scene,
+    definitions = [],
+    { cameraOrbit } = {},
+) {
     const objectsById = new Map();
 
     definitions.forEach((definition) => {
+        if (!cameraOrbit) {
+            throw new Error("Camera targets require camera controls.");
+        }
+
         if (typeof definition.id !== "string" || definition.id.trim() === "") {
             throw new Error("Scene objects require a non-empty id.");
         }
 
         if (objectsById.has(definition.id)) {
             throw new Error(`Duplicate scene object id: ${definition.id}`);
+        }
+
+        if (definition.type === "camera") {
+            if (!cameraOrbit) {
+                throw new Error("Camera targets require camera controls.");
+            }
+
+            objectsById.set(definition.id, {
+                userData: {
+                    type: "camera",
+                    sceneObjectId: definition.id,
+                    animation: definition.animation ?? {},
+                    setCameraLocked: cameraOrbit.setLocked,
+                },
+            });
+
+            return;
         }
 
         if (definition.type === "dom") {

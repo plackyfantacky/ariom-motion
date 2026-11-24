@@ -91,13 +91,6 @@ export function createScene(mountElement, options = {}) {
     createShadowsController(renderer, dataset);
     createLights(scene, dataset.lighting);
 
-    const sceneObjects = createSceneObjects(scene, dataset.sceneObjects);
-
-    positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
-    const objectAnimations = createSceneObjectAnimations(sceneObjects, dataset.sequences, events);
-
-    mountElement.appendChild(renderer.domElement);
-
     let cameraLocked = false;
     let orbitInteractionEnabled = !cameraTrack;
 
@@ -151,6 +144,13 @@ export function createScene(mountElement, options = {}) {
             return cameraLocked;
         },
     };
+
+    const sceneObjects = createSceneObjects(scene, dataset.sceneObjects, { cameraOrbit });
+
+    positionSceneObjectsForViewport(sceneObjects, pathLayoutCamera, mountElement);
+    const objectAnimations = createSceneObjectAnimations(sceneObjects, dataset.sequences, events);
+
+    mountElement.appendChild(renderer.domElement);
 
     const arrowMaterial = new THREE.MeshStandardMaterial({
         color: 0xff9d2a,
@@ -221,6 +221,8 @@ export function createScene(mountElement, options = {}) {
         const currentTime = playback.update(deltaTime);
         const ambientTime = timer.getElapsed();
 
+        objectAnimations.update(currentTime, ambientTime);
+
         frameListeners.forEach((listener) => {
             listener({
                 deltaTime,
@@ -242,8 +244,6 @@ export function createScene(mountElement, options = {}) {
             currentTime,
             ambientTime,
         });
-
-        objectAnimations.update(currentTime, ambientTime);
 
         sceneObjects.forEach((object) => {
             object.userData.updateModifiers?.();
@@ -349,6 +349,8 @@ export function createScene(mountElement, options = {}) {
     });
 
     handleScroll();
+    objectAnimations.update(playback.state.currentTime, 0);
+    
     animationFrameId = requestAnimationFrame(animate);
 
     return {

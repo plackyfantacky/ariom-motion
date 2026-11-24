@@ -1,3 +1,4 @@
+import { createCameraSequenceEvaluator } from "./createCameraSequenceEvaluator.js";
 import { createObjectSequenceEvaluator } from "./createObjectSequenceEvaluator.js";
 import { createDomSequenceEvaluator } from "./createDomSequenceEvaluator.js";
 import { resolveAnimationBindings } from "./resolveAnimationBindings.js";
@@ -35,9 +36,10 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             }
 
             const isDomObject = object.userData.type === "dom";
+            const isCameraObject = object.userData.type === "camera";
 
-            if (isDomObject && layerName !== "primary") {
-                throw new Error("DOM animations currently support the primary layer only.");
+            if ((isDomObject || isCameraObject) && layerName !== "primary") {
+                throw new Error("DOM and camera animations currently support the primary layer only.");
             }
 
             if (layerName === "additive" && sequence.rotationSpace !== "local") {
@@ -57,9 +59,15 @@ export function createSceneObjectAnimations(sceneObjects, sequences = {}, events
             const layer = layers.get(layerName);
             const target = layerName === "additive" ? object.userData.motionGroup : object.userData.poseGroup;
 
-            const evaluator = isDomObject
-                ? createDomSequenceEvaluator(object, sequence, binding.play)
-                : createObjectSequenceEvaluator(object, sequence, binding.play, target);
+            let evaluator;
+
+            if (isCameraObject) {
+                evaluator = createCameraSequenceEvaluator(object, sequence, binding.play);
+            } else if (isDomObject) {
+                evaluator = createDomSequenceEvaluator(object, sequence, binding.play);
+            } else {
+                evaluator = createObjectSequenceEvaluator(object, sequence, binding.play, target);
+            }
 
             const duration = evaluator.duration;
             const clock = createSequenceClock(duration, binding.loop);
