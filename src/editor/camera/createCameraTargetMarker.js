@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 
-export function createCameraTargetMarker(scene, size = 0.5) {
-
-    const normalColour = 0x000000;
+export function createCameraTargetMarker(
+    /* prettier-ignore */
+    scene,
+    size = 0.5,
+    normalColour = 0x000000,
+) {
     const intersectColour = 0xFFD84D;
 
     const halfSize = size / 2;
@@ -92,6 +95,7 @@ export function createCameraTargetMarker(scene, size = 0.5) {
     }
 
     return {
+        object: marker,
         setPosition,
         setVisible,
         setArmIntersecting,

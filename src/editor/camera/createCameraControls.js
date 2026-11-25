@@ -13,6 +13,7 @@ export function createCameraControls({
     getCameraView = () => null,
     initialExpanded = true,
     onCameraEditingChange = () => {},
+    onCameraEditTargetChange = () => {},
     onCameraModeChange = () => {},
     onCameraTargetVisibilityChange = () => {},
     onCameraUpVisibilityChange = () => {},
@@ -45,6 +46,7 @@ export function createCameraControls({
     /* selectors */
 
     const cameraEditingInput = controlsContainer.querySelector("[data-camera-editing]");
+    const cameraEditTargetInputs = [...controlsContainer.querySelectorAll("[data-camera-edit-target]")];
     const cameraModeButtons = [...controlsContainer.querySelectorAll("[data-camera-mode]")];
     const cameraTargetVisibilityInput = controlsContainer.querySelector("[data-camera-target-visible]");
     const cameraUpVisibilityInput = controlsContainer.querySelector("[data-camera-up-visible]");
@@ -59,6 +61,10 @@ export function createCameraControls({
     const zoomEnabledInput = controlsContainer.querySelector("[data-camera-zoom-enabled]");
 
     /* listeners */
+
+    cameraEditTargetInputs.forEach((input) => {
+        input.addEventListener("change", handleCameraEditTargetChange);
+    });
 
     cameraModeButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -129,9 +135,19 @@ export function createCameraControls({
         onSceneCameraVisibilityChange(sceneCameraVisibilityInput.checked);
     }
 
+    function handleCameraEditTargetChange(event) {
+        if (event.target.checked) {
+            onCameraEditTargetChange(event.target.value);
+        }
+    }
+
     function setSceneCameraVisible(isVisible) {
         sceneCameraVisibilityInput.checked = isVisible;
         cameraEditingInput.disabled = !isVisible;
+
+        cameraEditTargetInputs.forEach((input) => {
+            input.disabled = !isVisible;
+        });
     }
 
     function handleCameraEditingChange() {
@@ -167,6 +183,9 @@ export function createCameraControls({
             controlsContainer.remove();
             panelToggle.destroy();
             cameraEditingInput.removeEventListener("change", handleCameraEditingChange);
+            cameraEditTargetInputs.forEach((input) => {
+                input.removeEventListener("change", handleCameraEditTargetChange);
+            });
             domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
             sceneCameraVisibilityInput.removeEventListener("change", handleSceneCameraVisibilityChange);
             zoomEnabledInput.removeEventListener("change", handleZoomChange);

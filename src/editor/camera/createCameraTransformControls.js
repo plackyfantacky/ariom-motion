@@ -1,7 +1,16 @@
 import { Vector3 } from "three";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 
-export function createCameraTransformControls({ scene, camera, sceneCamera, renderer, getSceneCameraTarget, onDragStateChange = () => {} }) {
+export function createCameraTransformControls({
+    /* prettier-ignore */
+    camera,
+    getSceneCameraTarget,
+    onDragStateChange = () => {},
+    renderer,
+    scene,
+    sceneCamera,
+    sceneTargetObject,
+}) {
     const controls = new TransformControls(camera, renderer.domElement);
 
     controls.setMode("translate");
@@ -26,6 +35,7 @@ export function createCameraTransformControls({ scene, camera, sceneCamera, rend
     const movement = new Vector3();
 
     let enabled = false;
+    let editTarget = "camera";
 
     function handleDragStateChange(event) {
         if (event.value) {
@@ -40,11 +50,23 @@ export function createCameraTransformControls({ scene, camera, sceneCamera, rend
             return;
         }
 
-        movement.subVectors(sceneCamera.position, previousPosition);
+        const target = getSceneCameraTarget();
 
-        // Move the target with the camera to preserve its viewing direction.
-        getSceneCameraTarget().add(movement);
-        previousPosition.copy(sceneCamera.position);
+        if (editTarget === "target") {
+            // A camera cannot look at its own position.
+            if (sceneTargetObject.position.distanceToSquared(sceneCamera.position) < 0.000001) {
+                sceneTargetObject.position.copy(target);
+                return;
+            }
+
+            target.copy(sceneTargetObject.position);
+            sceneCamera.lookAt(target);
+        } else {
+            movement.subVectors(sceneCamera.position, previousPosition);
+
+            target.add(movement);
+            previousPosition.copy(sceneCamera.position);
+        }
 
         sceneCamera.updateMatrixWorld(true);
     }
@@ -64,9 +86,35 @@ export function createCameraTransformControls({ scene, camera, sceneCamera, rend
         helper.visible = enabled;
 
         if (enabled) {
-            controls.attach(sceneCamera);
+            sceneTargetObject.position.copy(getSceneCameraTarget());
+            attachSelectedObject();
         } else {
             controls.detach();
+        }
+    }
+
+    function attachSelectedObject() {
+        controls.attach(editTarget === "target" ? sceneTargetObject : sceneCamera);
+    }
+
+    function setEditTarget(nextTarget) {
+        if (!["camera", "target"].includes(nextTarget)) {
+            throw new Error(`Unknown camera edit target: ${nextTarget}`);
+        }
+
+        if (editTarget === nextTarget) {
+            return;
+        }
+
+        if (controls.dragging) {
+            controls.dragging = false;
+        }
+
+        editTarget = nextTarget;
+        sceneTargetObject.position.copy(getSceneCameraTarget());
+
+        if (enabled) {
+            attachSelectedObject();
         }
     }
 

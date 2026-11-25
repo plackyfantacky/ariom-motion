@@ -12,6 +12,7 @@ import { createCameraControls } from "./camera/createCameraControls.js";
 import { createCameraFrustumHelper } from "./camera/createCameraFrustumHelper.js";
 import { createCameraMesh } from "./camera/createCameraMesh.js";
 import { createCameraTransformControls } from "./camera/createCameraTransformControls.js";
+import { createCameraTargetMarker } from "./camera/createCameraTargetMarker.js";
 
 //scene
 import { createAxesGauge } from "./scene/createAxesGauge.js";
@@ -75,6 +76,9 @@ export function createArrowCloudEditor({
 
     const cameraMesh = createCameraMesh(scene, sceneCamera);
 
+    const sceneTargetMarker = createCameraTargetMarker(scene, 0.6, 0xffc783);
+    sceneTargetMarker.setPosition(getSceneCameraTarget());
+
     //main actions
     const cameraController = createCameraController({
         camera,
@@ -87,11 +91,12 @@ export function createArrowCloudEditor({
     });
 
     const cameraTransformControls = createCameraTransformControls({
-        scene,
         camera,
-        sceneCamera,
-        renderer,
         getSceneCameraTarget,
+        renderer,
+        scene,
+        sceneCamera,
+        sceneTargetObject: sceneTargetMarker.object,
 
         onDragStateChange(isDragging) {
             cameraController.setInteractionEnabled(!isDragging);
@@ -196,6 +201,10 @@ export function createArrowCloudEditor({
         onDomVisibilityChange(isVisible) {
             setDomVisible(isVisible);
             preferences.set("domVisible", isVisible);
+        },
+
+        onCameraEditTargetChange(target) {
+            cameraTransformControls.setEditTarget(target);
         },
     });
 
@@ -416,6 +425,8 @@ export function createArrowCloudEditor({
     function syncSceneCameraVisibility() {
         const isVisible = preferences.get("sceneCameraVisible") && isCameraOverridden() && !document.body.classList.contains("editor-ui-hidden");
 
+        sceneTargetMarker.setVisible(isVisible);
+
         cameraMesh.setVisible(isVisible);
         cameraFrustumHelper.setVisible(isVisible);
 
@@ -456,6 +467,8 @@ export function createArrowCloudEditor({
         cameraFrustumHelper.update();
         cameraMesh.update();
 
+        sceneTargetMarker.setPosition(getSceneCameraTarget());
+
         if (!document.body.classList.contains("editor-ui-hidden")) {
             return;
         }
@@ -489,22 +502,24 @@ export function createArrowCloudEditor({
     }
 
     function destroy() {
-        uiVisibilityToggle.destroy();
-        timelineControls.destroy();
-        cameraControls.destroy();
-        sceneControls.destroy();
         buildInfo.destroy();
-        pathTools.destroy();
-        cameraTransformControls.destroy();
-        onSceneCameraEditingChange(false);
         cameraController.destroy();
+        cameraControls.destroy();
         cameraFrustumHelper.destroy();
         cameraMesh.destroy();
+        cameraTransformControls.destroy();
+        pathTools.destroy();
+        sceneControls.destroy();
+        sceneTargetMarker.destroy();
+        timelineControls.destroy();
+        uiVisibilityToggle.destroy();
+
+        onSceneCameraEditingChange(false);
 
         scene.remove(gridHelper);
         scene.remove(axesGauge);
-
         scene.remove(sceneOriginMarker);
+
         sceneOriginMarker.dispose();
 
         originalDomVisibility.forEach((wasHidden, element) => {

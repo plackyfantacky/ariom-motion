@@ -41,8 +41,20 @@
 
             <label class="editor-camera-controls__option">
                 <input type="checkbox" data-camera-editing />
-                Move scene camera
+                Edit scene camera
             </label>
+
+            <div class="editor-camera-controls__row">
+                <label class="editor-camera-controls__option">
+                    <input type="radio" name="scene-camera-edit-target" data-camera-edit-target value="camera" checked />
+                    Camera position
+                </label>
+
+                <label class="editor-camera-controls__option">
+                    <input type="radio" name="scene-camera-edit-target" data-camera-edit-target value="target" />
+                    Scene target
+                </label>
+            </div>
         </section>
 
         <section class="editor-camera-controls__section">
