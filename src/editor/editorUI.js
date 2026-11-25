@@ -11,7 +11,7 @@ const defaults = {
     cameraUpVisible: true,
     pathPanelExpanded: true,
     lineLabelsVisible: true,
-    cameraFrustumVisible: false,
+    sceneCameraVisible: true,
     sceneOriginVisible: true,
     uiVisible: true,
     cameraMode: "orbital",
@@ -63,13 +63,7 @@ export function createEditorPreferences() {
     };
 }
 
-export function createPanelToggle({
-    button,
-    content,
-    label,
-    initialExpanded = true,
-    onExpandedChange = () => {},
-}) {
+export function createPanelToggle({ button, content, label, initialExpanded = true, onExpandedChange = () => {} }) {
     function setExpanded(isExpanded) {
         button.setAttribute("aria-expanded", String(isExpanded));
         content.hidden = !isExpanded;

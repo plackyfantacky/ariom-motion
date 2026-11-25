@@ -11,7 +11,9 @@
                 <button type="button" data-camera-mode="tracked">Follow scene</button>
             </div>
 
-            <p class="editor-camera-controls__notice" data-camera-lock-notice role="status" hidden>Scene camera interaction is locked. Editor navigation remains available.</p>
+            <p class="editor-camera-controls__notice" data-camera-lock-notice role="status" hidden>
+                Scene camera interaction is locked. Editor navigation remains available.
+            </p>
 
             <label class="editor-camera-controls__option" data-camera-orbital-options>
                 <input type="checkbox" data-camera-zoom-enabled />
@@ -35,17 +37,21 @@
         </section>
 
         <section class="editor-camera-controls__section">
+            <h3 class="editor-camera-controls__heading">Scene camera</h3>
+
+            <label class="editor-camera-controls__option">
+                <input type="checkbox" data-camera-editing />
+                Move scene camera
+            </label>
+        </section>
+
+        <section class="editor-camera-controls__section">
             <h3 class="editor-camera-controls__heading">Show/Hide</h3>
 
             <div class="editor-camera-controls__options">
                 <label class="editor-camera-controls__option">
-                    <input type="checkbox" data-camera-mesh-visible />
-                    Camera mesh
-                </label>
-
-                <label class="editor-camera-controls__option">
-                    <input type="checkbox" data-camera-frustum-visible />
-                    Frustum
+                    <input type="checkbox" data-scene-camera-visible />
+                    Scene camera
                 </label>
 
                 <label class="editor-camera-controls__option">

@@ -11,6 +11,7 @@ import { createCameraController } from "./camera/createCameraController.js";
 import { createCameraControls } from "./camera/createCameraControls.js";
 import { createCameraFrustumHelper } from "./camera/createCameraFrustumHelper.js";
 import { createCameraMesh } from "./camera/createCameraMesh.js";
+import { createCameraTransformControls } from "./camera/createCameraTransformControls.js";
 
 //scene
 import { createAxesGauge } from "./scene/createAxesGauge.js";
@@ -41,12 +42,15 @@ export function createArrowCloudEditor({
     hasInitialCameraState,
     onDatasetChange,
     onUIVisibilityChange = () => {},
+    onSceneCameraEditingChange = () => {},
     domElements = [],
     sceneCamera,
     getSceneCameraTarget,
     isSceneCameraLocked,
 }) {
     const preferences = createEditorPreferences();
+
+    let isEditingSceneCamera = false;
 
     const originalDomVisibility = new Map(
         domElements.map((element) => {
@@ -71,9 +75,6 @@ export function createArrowCloudEditor({
 
     const cameraMesh = createCameraMesh(scene, sceneCamera);
 
-    cameraFrustumHelper.setVisible(preferences.get("cameraFrustumVisible"));
-    cameraMesh.setVisible(preferences.get("cameraMeshVisible"));
-
     //main actions
     const cameraController = createCameraController({
         camera,
@@ -83,7 +84,18 @@ export function createArrowCloudEditor({
         scene,
         initialCameraTarget,
         hasInitialCameraState,
-        cameraFrustumVisible: preferences.get("cameraFrustumVisible"),
+    });
+
+    const cameraTransformControls = createCameraTransformControls({
+        scene,
+        camera,
+        sceneCamera,
+        renderer,
+        getSceneCameraTarget,
+
+        onDragStateChange(isDragging) {
+            cameraController.setInteractionEnabled(!isDragging);
+        },
     });
 
     const savedCameraMode = preferences.get("cameraMode");
@@ -102,9 +114,9 @@ export function createArrowCloudEditor({
         initialExpanded: preferences.get("cameraPanelExpanded"),
         cameraTargetVisible: preferences.get("cameraTargetVisible"),
         cameraUpVisible: preferences.get("cameraUpVisible"),
-        cameraFrustumVisible: preferences.get("cameraFrustumVisible"),
         cameraZoomEnabled: cameraController.getZoomEnabled(),
         domVisible: preferences.get("domVisible"),
+        sceneCameraVisible: preferences.get("sceneCameraVisible"),
 
         onPanelExpandedChange(isExpanded) {
             preferences.set("cameraPanelExpanded", isExpanded);
@@ -119,7 +131,12 @@ export function createArrowCloudEditor({
         },
 
         onCameraModeChange(cameraMode) {
-            cameraController.setMode(cameraMode);
+            if (isEditingSceneCamera) {
+                setSceneCameraEditing(false);
+                cameraControls.setCameraEditing(false);
+            }
+
+            cameraController.setMode(cameraMode); 
             preferences.set("cameraMode", cameraController.getMode());
         },
 
@@ -151,9 +168,16 @@ export function createArrowCloudEditor({
             preferences.set("cameraUpVisible", isVisible);
         },
 
-        onCameraFrustumVisibilityChange(isVisible) {
-            cameraFrustumHelper.setVisible(isVisible);
-            preferences.set("cameraFrustumVisible", isVisible);
+        onSceneCameraVisibilityChange(isVisible) {
+            preferences.set("sceneCameraVisible", isVisible);
+
+            if (!isVisible && isEditingSceneCamera) {
+                setSceneCameraEditing(false);
+                cameraControls.setCameraEditing(false);
+            }
+
+            cameraControls.setSceneCameraVisible(isVisible);
+            syncSceneCameraVisibility();
         },
 
         onCameraZoomChange(isEnabled) {
@@ -167,6 +191,11 @@ export function createArrowCloudEditor({
         onDomVisibilityChange(isVisible) {
             setDomVisible(isVisible);
             preferences.set("domVisible", isVisible);
+        },
+
+        onCameraMeshVisibilityChange(isVisible) {
+            cameraMesh.setVisible(isVisible);
+            preferences.set("cameraMeshVisible", isVisible);
         },
     });
 
@@ -293,6 +322,11 @@ export function createArrowCloudEditor({
             sceneOriginMarker.visible = isVisible;
             preferences.set("sceneOriginVisible", isVisible);
         },
+
+        onCameraEditingChange(isEditing) {
+            setSceneCameraEditing(isEditing);
+            cameraControls.updateCameraModeButtons();
+        },
     });
 
     const buildInfo = createBuildInfo(sidebar, __ARROW_CLOUD_BUILD__);
@@ -347,6 +381,20 @@ export function createArrowCloudEditor({
         });
     }
 
+    function setSceneCameraEditing(isEditing) {
+        isEditingSceneCamera = isEditing;
+
+        onSceneCameraEditingChange(isEditing);
+
+        if (isEditing) {
+            cameraController.setMode("orbital");
+            preferences.set("cameraMode", "orbital");
+            pathTools.clearSelection();
+        }
+
+        cameraTransformControls.setEnabled(isEditing && !document.body.classList.contains("editor-ui-hidden"));
+    }
+
     //exposed output functions
 
     function update({ deltaTime }) {
@@ -358,10 +406,21 @@ export function createArrowCloudEditor({
 
         gridHelper.position.x = Math.round(camera.position.x);
         gridHelper.position.z = Math.round(camera.position.z);
+
+        syncSceneCameraVisibility();
     }
 
     function isCameraOverridden() {
         return cameraController.getMode() !== "tracked";
+    }
+
+    function syncSceneCameraVisibility() {
+        const isVisible = preferences.get("sceneCameraVisible") && isCameraOverridden() && !document.body.classList.contains("editor-ui-hidden");
+
+        cameraMesh.setVisible(isVisible);
+        cameraFrustumHelper.setVisible(isVisible);
+
+        cameraTransformControls.setEnabled(isVisible && isEditingSceneCamera);
     }
 
     function getArrowPaths() {
@@ -394,8 +453,9 @@ export function createArrowCloudEditor({
     }
 
     function prepareRender() {
+        syncSceneCameraVisibility();
         cameraFrustumHelper.update();
-        cameraMesh.update(isCameraOverridden());
+        cameraMesh.update();
 
         if (!document.body.classList.contains("editor-ui-hidden")) {
             return;

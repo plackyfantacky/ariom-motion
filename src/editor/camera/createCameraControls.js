@@ -3,8 +3,9 @@ import cameraControlsTemplate from "./cameraControls.html";
 import { createPanelToggle } from "../editorUI";
 
 export function createCameraControls({
-    cameraFrustumVisible = false,
-    cameraMeshVisible = true,
+    sceneCameraVisible = true,
+    onSceneCameraVisibilityChange = () => {},
+
     cameraTargetVisible = true,
     cameraUpVisible = true,
     cameraZoomEnabled = false,
@@ -14,8 +15,7 @@ export function createCameraControls({
     getCameraMode = () => "orbital",
     getCameraView = () => null,
     initialExpanded = true,
-    onCameraFrustumVisibilityChange = () => {},
-    onCameraMeshVisibilityChange = () => {},
+
     onCameraModeChange = () => {},
     onCameraTargetVisibilityChange = () => {},
     onCameraUpVisibilityChange = () => {},
@@ -45,8 +45,7 @@ export function createCameraControls({
 
     /* selectors */
 
-    const cameraFrustumVisibilityInput = controlsContainer.querySelector("[data-camera-frustum-visible]");
-    const cameraMeshVisibilityInput = controlsContainer.querySelector("[data-camera-mesh-visible]");
+    const sceneCameraVisibilityInput = controlsContainer.querySelector("[data-scene-camera-visible]");
     const cameraModeButtons = [...controlsContainer.querySelectorAll("[data-camera-mode]")];
     const cameraTargetVisibilityInput = controlsContainer.querySelector("[data-camera-target-visible]");
     const cameraUpVisibilityInput = controlsContainer.querySelector("[data-camera-up-visible]");
@@ -92,13 +91,9 @@ export function createCameraControls({
         onCameraUpVisibilityChange(cameraUpVisibilityInput.checked);
     });
 
-    cameraFrustumVisibilityInput.addEventListener("change", () => {
-        onCameraFrustumVisibilityChange(cameraFrustumVisibilityInput.checked);
-    });
-
-    cameraMeshVisibilityInput.addEventListener("change", handleCameraMeshVisibilityChange);
-
     domVisibilityInput.addEventListener("change", handleDomVisibilityChange);
+
+    sceneCameraVisibilityInput.addEventListener("change", handleSceneCameraVisibilityChange);
 
     /* handlers/helpers */
 
@@ -131,8 +126,13 @@ export function createCameraControls({
         onDomVisibilityChange(domVisibilityInput.checked);
     }
 
-    function handleCameraMeshVisibilityChange() {
-        onCameraMeshVisibilityChange(cameraMeshVisibilityInput.checked);
+    function handleSceneCameraVisibilityChange() {
+        onSceneCameraVisibilityChange(sceneCameraVisibilityInput.checked);
+    }
+
+    function setSceneCameraVisible(isVisible) {
+        sceneCameraVisibilityInput.checked = isVisible;
+        cameraEditingInput.disabled = !isVisible;
     }
 
     /* runtime defaults */
@@ -145,8 +145,7 @@ export function createCameraControls({
 
     cameraTargetVisibilityInput.checked = cameraTargetVisible;
     cameraUpVisibilityInput.checked = cameraUpVisible;
-    cameraFrustumVisibilityInput.checked = cameraFrustumVisible;
-    cameraMeshVisibilityInput.checked = cameraMeshVisible;
+    setSceneCameraVisible(sceneCameraVisible);
 
     container.appendChild(controlsContainer);
 
@@ -158,7 +157,7 @@ export function createCameraControls({
         destroy() {
             zoomEnabledInput.removeEventListener("change", handleZoomChange);
             domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
-            cameraMeshVisibilityInput.removeEventListener("change", handleCameraMeshVisibilityChange);
+            sceneCameraVisibilityInput.removeEventListener("change", handleSceneCameraVisibilityChange);
             controlsContainer.remove();
             panelToggle.destroy();
         },
