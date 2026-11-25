@@ -8,6 +8,7 @@ import { createLights } from "../lighting/createLights.js";
 import { createShadowsController } from "../lighting/createShadowsController.js";
 import { createBackgroundShader } from "../shaders/createBackgroundShader.js";
 import { createOrbitControls } from "./createOrbitControls.js";
+import { createCameraHandoff } from "./createCameraHandoff.js";
 
 import { createEventBus } from "../events/createEventBus.js";
 import { createPlaybackController } from "../animation/createPlaybackController.js";
@@ -72,6 +73,8 @@ export function createScene(mountElement, options = {}) {
     }
 
     let viewportCamera = null;
+    let hasManualCameraInteraction = false;
+    const cameraHandoff = createCameraHandoff(0.4);
     const pathLayoutCamera = camera.clone();
 
     pathLayoutCamera.updateProjectionMatrix();
@@ -95,6 +98,8 @@ export function createScene(mountElement, options = {}) {
     let pendingCameraPose = null;
     let completedCameraPose = null;
 
+    let wasSceneOrbitEnabled = false;
+
     const cameraMovement = new THREE.Vector3();
     const sequenceCameraPosition = new THREE.Vector3();
 
@@ -109,6 +114,15 @@ export function createScene(mountElement, options = {}) {
         target: orbitTarget,
         enabled: orbitInteractionEnabled && !cameraLocked,
     });
+
+    orbitControls.addEventListener("start", handleSceneOrbitStart);
+
+    const scriptedCameraPose = {
+        position: camera.position.clone(),
+        quaternion: camera.quaternion.clone(),
+        up: camera.up.clone(),
+        target: orbitControls.target.clone(),
+    };
 
     const cameraOrbit = {
         getControls() {
@@ -126,6 +140,7 @@ export function createScene(mountElement, options = {}) {
             });
 
             orbitControls.update();
+            orbitControls.addEventListener("start", handleSceneOrbitStart);
 
             return orbitControls;
         },
@@ -136,7 +151,13 @@ export function createScene(mountElement, options = {}) {
         },
 
         setLocked(isLocked) {
+            const wasLocked = cameraLocked;
             cameraLocked = isLocked;
+
+            if (isLocked && !wasLocked && cameraAnimationEnabled && hasManualCameraInteraction) {
+                beginCameraHandoff();
+            }
+
             syncOrbitInteraction();
         },
 
@@ -191,6 +212,10 @@ export function createScene(mountElement, options = {}) {
 
     // helpers
 
+    function handleSceneOrbitStart() {
+        hasManualCameraInteraction = true;
+    }
+
     function getRenderCamera() {
         return viewportCamera ?? camera;
     }
@@ -207,7 +232,20 @@ export function createScene(mountElement, options = {}) {
     }
 
     function syncOrbitInteraction() {
-        orbitControls.enabled = orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive;
+        const shouldEnable = orbitInteractionEnabled && !cameraLocked && !cameraAnimationActive && !cameraHandoff.isActive();
+
+        if (shouldEnable && !orbitControls.enabled) {
+            const target = orbitControls.target.clone();
+            const zoomEnabled = orbitControls.enableZoom;
+
+            camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+
+            // OrbitControls caches its up frame during construction.
+            cameraOrbit.rebuild(target);
+            orbitControls.enableZoom = zoomEnabled;
+        }
+
+        orbitControls.enabled = shouldEnable;
     }
 
     function rebuildArrowPaths() {
@@ -236,45 +274,95 @@ export function createScene(mountElement, options = {}) {
         });
     }
 
-    function applyCameraSequencePose() {
+    function applyCameraSequencePose(deltaTime) {
         const pose = pendingCameraPose;
+
+        if (!cameraAnimationEnabled) {
+            cameraHandoff.cancel();
+            cameraAnimationActive = false;
+            syncOrbitInteraction();
+            return;
+        }
 
         if (!pose || !pose.complete) {
             completedCameraPose = null;
         }
 
-        cameraAnimationActive = Boolean(cameraAnimationEnabled && pose && (!pose.complete || completedCameraPose !== pose));
+        const shouldApplyPose = Boolean(pose && (!pose.complete || completedCameraPose !== pose));
+
+        if (shouldApplyPose && hasManualCameraInteraction) {
+            beginCameraHandoff();
+        }
+
+        // Evaluate from authored state, not last frame's blended result.
+        if (cameraHandoff.isActive()) {
+            restoreScriptedCameraPose();
+        }
+
+        cameraAnimationActive = shouldApplyPose || cameraHandoff.isActive();
 
         syncOrbitInteraction();
 
-        if (!cameraAnimationActive) {
+        if (shouldApplyPose) {
+            if (pose.position) {
+                sequenceCameraPosition.copy(pose.position);
+
+                if (pose.responsiveDistance) {
+                    sequenceCameraPosition.z += getCameraDistanceOffset(mountElement);
+                }
+
+                if (!pose.target) {
+                    cameraMovement.copy(sequenceCameraPosition).sub(camera.position);
+
+                    orbitControls.target.add(cameraMovement);
+                }
+
+                camera.position.copy(sequenceCameraPosition);
+            }
+
+            if (pose.target) {
+                orbitControls.target.copy(pose.target);
+                camera.lookAt(orbitControls.target);
+            }
+
+            // Save the authored destination before applying the blend.
+            rememberScriptedCameraPose();
+
+            if (pose.complete) {
+                completedCameraPose = pose;
+            }
+        }
+
+        cameraHandoff.apply(deltaTime, camera, orbitControls.target);
+    }
+
+    function rememberScriptedCameraPose() {
+        scriptedCameraPose.position.copy(camera.position);
+        scriptedCameraPose.quaternion.copy(camera.quaternion);
+        scriptedCameraPose.up.copy(camera.up);
+        scriptedCameraPose.target.copy(orbitControls.target);
+    }
+
+    function restoreScriptedCameraPose() {
+        camera.position.copy(scriptedCameraPose.position);
+        camera.quaternion.copy(scriptedCameraPose.quaternion);
+        camera.up.copy(scriptedCameraPose.up);
+        orbitControls.target.copy(scriptedCameraPose.target);
+    }
+
+    function beginCameraHandoff() {
+        if (cameraHandoff.isActive()) {
             return;
         }
 
-        if (pose.position) {
-            sequenceCameraPosition.copy(pose.position);
+        cameraHandoff.start(camera, orbitControls.target);
+        hasManualCameraInteraction = false;
 
-            if (pose.responsiveDistance) {
-                sequenceCameraPosition.z += getCameraDistanceOffset(mountElement);
-            }
+        // Rebuild once to discard remaining orbit damping.
+        cameraAnimationActive = true;
+        cameraOrbit.rebuild(orbitControls.target.clone());
 
-            if (!pose.target) {
-                cameraMovement.copy(sequenceCameraPosition).sub(camera.position);
-
-                orbitControls.target.add(cameraMovement);
-            }
-
-            camera.position.copy(sequenceCameraPosition);
-        }
-
-        if (pose.target) {
-            orbitControls.target.copy(pose.target);
-            camera.lookAt(orbitControls.target);
-        }
-
-        if (pose.complete) {
-            completedCameraPose = pose;
-        }
+        syncOrbitInteraction();
     }
 
     function animate() {
@@ -300,11 +388,29 @@ export function createScene(mountElement, options = {}) {
             });
         });
 
-        applyCameraSequencePose();
+        applyCameraSequencePose(deltaTime);
 
-        if (orbitControls.enabled) {
+        // if (orbitControls.enabled) {
+        //     orbitControls.update();
+        // }
+
+        const isSceneOrbitEnabled = orbitControls.enabled;
+
+        if (isSceneOrbitEnabled) {
+            const justEnabled = !wasSceneOrbitEnabled;
+
+            const previousQuaternion = justEnabled ? camera.quaternion.clone() : null;
+
             orbitControls.update();
+
+            if (justEnabled) {
+                const adjustment = THREE.MathUtils.radToDeg(previousQuaternion.angleTo(camera.quaternion));
+
+                console.log("Orbit activation adjustment:", adjustment, "degrees");
+            }
         }
+
+        wasSceneOrbitEnabled = isSceneOrbitEnabled;
 
         updateArrowAnimations({
             renderedArrowItems,

@@ -3,19 +3,18 @@ import buildInfoTemplate from "./buildInfo.html";
 const STORAGE_KEY = "arrowCloud.editor.preferences";
 
 const defaults = {
-    cameraPanelExpanded: true,
-    scenePanelExpanded: true,
-    gridVisible: true,
     axesVisible: true,
-    cameraTargetVisible: true,
-    cameraUpVisible: true,
-    pathPanelExpanded: true,
+    cameraMode: "orbital",
+    cameraPanelExpanded: true,
+    domVisible: true,
+    gridVisible: true,
     lineLabelsVisible: true,
+    pathPanelExpanded: true,
     sceneCameraVisible: true,
     sceneOriginVisible: true,
+    scenePanelExpanded: true,
     uiVisible: true,
-    cameraMode: "orbital",
-    domVisible: true,
+    viewportTargetVisible: true,
 };
 
 export function createEditorPreferences() {

@@ -264,11 +264,8 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         onViewPresetChange = handler;
     }
 
-    function setTargetMarkerVisible(isVisible) {
+    function setViewportTargetVisible(isVisible) {
         cameraTargetMarker.setVisible(isVisible);
-    }
-
-    function setUpMarkerVisible(isVisible) {
         cameraUpMarker.setVisible(isVisible);
     }
 
@@ -278,6 +275,40 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
         cameraOrbit.setEnabled(isEnabled && cameraMode === CAMERA_MODES.ORBITAL);
 
         flyControls.enabled = isEnabled && !cameraOrbit.isLocked() && cameraMode === CAMERA_MODES.FLY;
+    }
+
+    function captureViewport() {
+        return {
+            position: camera.position.clone(),
+            quaternion: camera.quaternion.clone(),
+            up: camera.up.clone(),
+            target: orbitControls.target.clone(),
+            mode: cameraMode,
+            viewPreset: currentViewPreset,
+            orbitDistance,
+            targetDistance: cameraTargetDistance,
+        };
+    }
+
+    function restoreViewport(snapshot) {
+        cameraMode = snapshot.mode;
+
+        camera.position.copy(snapshot.position);
+        camera.quaternion.copy(snapshot.quaternion);
+        camera.up.copy(snapshot.up);
+
+        rebuildOrbitControls(snapshot.target);
+
+        // Rebuilding controls may update orientation.
+        camera.quaternion.copy(snapshot.quaternion);
+        camera.updateMatrixWorld(true);
+
+        orbitDistance = snapshot.orbitDistance;
+        cameraTargetDistance = snapshot.targetDistance;
+        currentViewPreset = snapshot.viewPreset;
+
+        setInteractionEnabled(interactionEnabled);
+        onViewPresetChange();
     }
 
     function reset() {
@@ -386,19 +417,20 @@ export function createCameraController({ camera, cameraOrbit, renderer, scene, i
     }
 
     return {
-        getMode,
-        getViewPreset,
-        setMode,
-        setViewPreset,
-        setViewPresetChangeHandler,
-        setInteractionEnabled,
-        setTargetMarkerVisible,
-        setUpMarkerVisible,
-        setZoomEnabled,
-        getZoomEnabled,
-        reset,
-        update,
+        captureViewport,
         copy,
         destroy,
+        getMode,
+        getViewPreset,
+        getZoomEnabled,
+        reset,
+        restoreViewport,
+        setInteractionEnabled,
+        setMode,
+        setViewportTargetVisible,
+        setViewPreset,
+        setViewPresetChangeHandler,
+        setZoomEnabled,
+        update,
     };
 }

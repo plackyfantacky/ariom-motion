@@ -5,6 +5,7 @@ import "./styles.css";
 
 //editor
 import { createEditorPreferences, createBuildInfo } from "./editorUI.js";
+import editorViewControlsTemplate from "./editorViewControls.html";
 
 //camera
 import { createCameraController } from "./camera/createCameraController.js";
@@ -27,27 +28,28 @@ import { createPathTools } from "./path/createPathTools.js";
 import { createTimelineControls } from "./timeline/createTimelineControls.js";
 
 export function createArrowCloudEditor({
-    playback,
+    arrowPaths,
     camera,
     cameraOrbit,
-    renderer,
-    mountElement,
-    scene,
-    arrowPaths,
-    initialCameraView,
+    domElements = [],
+    getArrows,
+    getRenderedArrowItems,
+    getSceneCameraTarget,
+    hasInitialCameraState,
     initialCameraDistance,
     initialCameraTarget,
-    getRenderedArrowItems,
-    getArrows,
-    onArrowPathsChange,
-    hasInitialCameraState,
-    onDatasetChange,
-    onUIVisibilityChange = () => {},
-    onSceneCameraEditingChange = () => {},
-    domElements = [],
-    sceneCamera,
-    getSceneCameraTarget,
+    initialCameraView,
     isSceneCameraLocked,
+    mountElement,
+    onArrowPathsChange,
+    onDatasetChange,
+    onSceneCameraEditingChange = () => {},
+    onScenePreviewChange = () => {},
+    onUIVisibilityChange = () => {},
+    playback,
+    renderer,
+    scene,
+    sceneCamera,
 }) {
     const preferences = createEditorPreferences();
 
@@ -116,12 +118,11 @@ export function createArrowCloudEditor({
     const cameraControls = createCameraControls({
         container: sidebar,
 
-        initialExpanded: preferences.get("cameraPanelExpanded"),
-        cameraTargetVisible: preferences.get("cameraTargetVisible"),
-        cameraUpVisible: preferences.get("cameraUpVisible"),
         cameraZoomEnabled: cameraController.getZoomEnabled(),
         domVisible: preferences.get("domVisible"),
+        initialExpanded: preferences.get("cameraPanelExpanded"),
         sceneCameraVisible: preferences.get("sceneCameraVisible"),
+        viewportTargetVisible: preferences.get("viewportTargetVisible"),
 
         onPanelExpandedChange(isExpanded) {
             preferences.set("cameraPanelExpanded", isExpanded);
@@ -163,14 +164,9 @@ export function createArrowCloudEditor({
             cameraController.copy();
         },
 
-        onCameraTargetVisibilityChange(isVisible) {
-            cameraController.setTargetMarkerVisible(isVisible);
-            preferences.set("cameraTargetVisible", isVisible);
-        },
-
-        onCameraUpVisibilityChange(isVisible) {
-            cameraController.setUpMarkerVisible(isVisible);
-            preferences.set("cameraUpVisible", isVisible);
+        onViewportTargetVisibilityChange(isVisible) {
+            cameraController.setViewportTargetVisible(isVisible);
+            preferences.set("viewportTargetVisible", isVisible);
         },
 
         onCameraEditingChange(isEditing) {
@@ -216,9 +212,7 @@ export function createArrowCloudEditor({
         cameraController.setViewPreset(initialCameraView, initialCameraDistance);
     }
 
-    cameraController.setTargetMarkerVisible(preferences.get("cameraTargetVisible"));
-
-    cameraController.setUpMarkerVisible(preferences.get("cameraUpVisible"));
+    cameraController.setViewportTargetVisible(preferences.get("viewportTargetVisible"));
 
     const pathTools = createPathTools({
         camera,
@@ -348,35 +342,80 @@ export function createArrowCloudEditor({
     //helpers
 
     function createUIVisibilityToggle() {
-        const element = document.createElement("label");
-        element.className = "editor-ui-toggle editor-panel ui";
-        element.innerHTML = `
-            <input type="checkbox">
-            Show UI
-        `;
+        const template = document.createElement("template");
+        template.innerHTML = editorViewControlsTemplate.trim();
+        const element = template.content.firstElementChild.cloneNode(true);
 
-        const checkbox = element.querySelector("input");
+        const showUIInput = element.querySelector("[data-show-ui]");
+        const previewInput = element.querySelector("[data-preview-scene]");
 
-        checkbox.checked = preferences.get("uiVisible");
+        let previousViewport = null;
+        let previousIsPlaying = false;
+
+        showUIInput.checked = preferences.get("uiVisible");
 
         function applyVisibility() {
-            document.body.classList.toggle("editor-ui-hidden", !checkbox.checked);
-            onUIVisibilityChange(checkbox.checked);
+            const isVisible = showUIInput.checked && !previewInput.checked;
+
+            showUIInput.disabled = previewInput.checked;
+
+            document.body.classList.toggle("editor-ui-hidden", !isVisible);
+            onUIVisibilityChange(isVisible);
         }
 
-        function handleChange() {
-            preferences.set("uiVisible", checkbox.checked);
+        function handleUIChange() {
+            preferences.set("uiVisible", showUIInput.checked);
             applyVisibility();
         }
 
-        checkbox.addEventListener("change", handleChange);
-        document.body.append(element);
+        function handlePreviewChange() {
+            if (previewInput.checked) {
+                previousViewport = cameraController.captureViewport();
+                previousIsPlaying = playback.state.isPlaying;
 
+                if (isEditingSceneCamera) {
+                    setSceneCameraEditing(false);
+                    cameraControls.setCameraEditing(false);
+                }
+
+                onSceneCameraEditingChange(false);
+                playback.state.isPlaying = true;
+
+                cameraController.setMode("tracked");
+                setDomVisible(true);
+            } else {
+                playback.state.isPlaying = previousIsPlaying;
+
+                if (previousViewport) {
+                    cameraController.restoreViewport(previousViewport);
+                    previousViewport = null;
+                }
+
+                setDomVisible(preferences.get("domVisible"));
+            }
+
+            cameraControls.updateCameraModeButtons();
+            cameraControls.updateCameraViewButtons();
+
+            onScenePreviewChange(previewInput.checked);
+            applyVisibility();
+        }
+
+        showUIInput.addEventListener("change", handleUIChange);
+        previewInput.addEventListener("change", handlePreviewChange);
+
+        document.body.append(element);
         applyVisibility();
 
         return {
             destroy() {
-                checkbox.removeEventListener("change", handleChange);
+                showUIInput.removeEventListener("change", handleUIChange);
+                previewInput.removeEventListener("change", handlePreviewChange);
+
+                if (previewInput.checked) {
+                    playback.state.isPlaying = previousIsPlaying;
+                }
+
                 element.remove();
                 document.body.classList.remove("editor-ui-hidden");
             },
@@ -519,6 +558,11 @@ export function createArrowCloudEditor({
         uiVisibilityToggle.destroy();
 
         onSceneCameraEditingChange(false);
+
+        if (previewInput.checked) {
+            playback.state.isPlaying = previousIsPlaying;
+            onScenePreviewChange(false);
+        }
 
         scene.remove(gridHelper);
         scene.remove(axesGauge);
