@@ -104,7 +104,9 @@ export function createScene(mountElement, options = {}) {
     // reusable camera orbit controls. for use in both editor and frontend modes.
     const authoredTarget = staticCamera?.target ? new THREE.Vector3(staticCamera.target.x, staticCamera.target.y, staticCamera.target.z) : null;
     const targetDistance = authoredTarget ? camera.position.distanceTo(authoredTarget) : 10;
+    
     const orbitTarget = camera.position.clone().addScaledVector(camera.getWorldDirection(new THREE.Vector3()), targetDistance);
+    const sceneOrbitUp = camera.up.clone();
 
     let orbitControls = createOrbitControls({
         camera,
@@ -236,7 +238,7 @@ export function createScene(mountElement, options = {}) {
             const target = orbitControls.target.clone();
             const zoomEnabled = orbitControls.enableZoom;
 
-            camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion).normalize();
+            camera.up.copy(sceneOrbitUp);
 
             // OrbitControls caches its up frame during construction.
             cameraOrbit.rebuild(target);
