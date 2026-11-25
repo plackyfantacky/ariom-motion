@@ -3,9 +3,6 @@ import cameraControlsTemplate from "./cameraControls.html";
 import { createPanelToggle } from "../editorUI";
 
 export function createCameraControls({
-    sceneCameraVisible = true,
-    onSceneCameraVisibilityChange = () => {},
-
     cameraTargetVisible = true,
     cameraUpVisible = true,
     cameraZoomEnabled = false,
@@ -15,7 +12,7 @@ export function createCameraControls({
     getCameraMode = () => "orbital",
     getCameraView = () => null,
     initialExpanded = true,
-
+    onCameraEditingChange = () => {},
     onCameraModeChange = () => {},
     onCameraTargetVisibilityChange = () => {},
     onCameraUpVisibilityChange = () => {},
@@ -26,6 +23,8 @@ export function createCameraControls({
     onDomVisibilityChange = () => {},
     onPanelExpandedChange = () => {},
     onResetCamera = () => {},
+    onSceneCameraVisibilityChange = () => {},
+    sceneCameraVisible = true,
 } = {}) {
     const template = document.createElement("template");
     template.innerHTML = cameraControlsTemplate;
@@ -45,7 +44,7 @@ export function createCameraControls({
 
     /* selectors */
 
-    const sceneCameraVisibilityInput = controlsContainer.querySelector("[data-scene-camera-visible]");
+    const cameraEditingInput = controlsContainer.querySelector("[data-camera-editing]");
     const cameraModeButtons = [...controlsContainer.querySelectorAll("[data-camera-mode]")];
     const cameraTargetVisibilityInput = controlsContainer.querySelector("[data-camera-target-visible]");
     const cameraUpVisibilityInput = controlsContainer.querySelector("[data-camera-up-visible]");
@@ -56,6 +55,7 @@ export function createCameraControls({
     const lockNotice = controlsContainer.querySelector("[data-camera-lock-notice]");
     const orbitalOptions = controlsContainer.querySelector("[data-camera-orbital-options]");
     const resetCameraButton = controlsContainer.querySelector('[data-action="reset-camera"]');
+    const sceneCameraVisibilityInput = controlsContainer.querySelector("[data-scene-camera-visible]");
     const zoomEnabledInput = controlsContainer.querySelector("[data-camera-zoom-enabled]");
 
     /* listeners */
@@ -68,6 +68,14 @@ export function createCameraControls({
         });
     });
 
+    cameraTargetVisibilityInput.addEventListener("change", () => {
+        onCameraTargetVisibilityChange(cameraTargetVisibilityInput.checked);
+    });
+
+    cameraUpVisibilityInput.addEventListener("change", () => {
+        onCameraUpVisibilityChange(cameraUpVisibilityInput.checked);
+    });
+
     cameraViewButtons.forEach((button) => {
         button.addEventListener("click", () => {
             onCameraViewChange(button.dataset.cameraView);
@@ -77,23 +85,14 @@ export function createCameraControls({
         });
     });
 
+    cameraEditingInput.addEventListener("change", handleCameraEditingChange);
+    domVisibilityInput.addEventListener("change", handleDomVisibilityChange);
+    sceneCameraVisibilityInput.addEventListener("change", handleSceneCameraVisibilityChange);
     zoomEnabledInput.addEventListener("change", handleZoomChange);
 
-    resetCameraButton.addEventListener("click", onResetCamera);
-    copySceneCameraButton.addEventListener("click", onCopySceneCamera);
     copyCurrentViewportButton.addEventListener("click", onCopyCurrentViewport);
-
-    cameraTargetVisibilityInput.addEventListener("change", () => {
-        onCameraTargetVisibilityChange(cameraTargetVisibilityInput.checked);
-    });
-
-    cameraUpVisibilityInput.addEventListener("change", () => {
-        onCameraUpVisibilityChange(cameraUpVisibilityInput.checked);
-    });
-
-    domVisibilityInput.addEventListener("change", handleDomVisibilityChange);
-
-    sceneCameraVisibilityInput.addEventListener("change", handleSceneCameraVisibilityChange);
+    copySceneCameraButton.addEventListener("click", onCopySceneCamera);
+    resetCameraButton.addEventListener("click", onResetCamera);
 
     /* handlers/helpers */
 
@@ -135,6 +134,14 @@ export function createCameraControls({
         cameraEditingInput.disabled = !isVisible;
     }
 
+    function handleCameraEditingChange() {
+        onCameraEditingChange(cameraEditingInput.checked);
+    }
+
+    function setCameraEditing(isEditing) {
+        cameraEditingInput.checked = isEditing;
+    }
+
     /* runtime defaults */
     zoomEnabledInput.checked = cameraZoomEnabled;
     domVisibilityInput.checked = domVisible;
@@ -150,16 +157,19 @@ export function createCameraControls({
     container.appendChild(controlsContainer);
 
     return {
+        setCameraEditing,
+        setSceneCameraVisible,
         updateCameraModeButtons,
         updateCameraViewButtons,
         updateCameraLock,
 
         destroy() {
-            zoomEnabledInput.removeEventListener("change", handleZoomChange);
-            domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
-            sceneCameraVisibilityInput.removeEventListener("change", handleSceneCameraVisibilityChange);
             controlsContainer.remove();
             panelToggle.destroy();
+            cameraEditingInput.removeEventListener("change", handleCameraEditingChange);
+            domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
+            sceneCameraVisibilityInput.removeEventListener("change", handleSceneCameraVisibilityChange);
+            zoomEnabledInput.removeEventListener("change", handleZoomChange);
         },
     };
 }

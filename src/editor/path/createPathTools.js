@@ -9,20 +9,21 @@ import { createArrowNameLabel } from "./createArrowNameLabel.js";
 import { createPathOriginMarkers } from "./createPathOriginMarkers.js";
 
 export function createPathTools({
-    container = document.body,
-    initialExpanded,
-    onPanelExpandedChange,
+    arrowPaths,
     camera,
+    container = document.body,
+    getArrows,
+    getPathVisibility = () => true,
+    initialExpanded,
+    lineLabelsVisible = true,
+    onOriginDragStateChange = () => {},
+    onPanelExpandedChange,
+    onPathCollectionChange = () => {},
+    onPathsChange,
+    onSelectionChange = () => {},
     renderer,
     scene,
-    arrowPaths,
-    getArrows,
-    onPathsChange,
-    lineLabelsVisible = true,
-    getPathVisibility = () => true,
-    onPathCollectionChange = () => {},
-    onOriginDragStateChange = () => {},
-    onSelectionChange = () => {},
+    shouldIgnoreSceneClick = () => false,
 }) {
     const pathEditor = createPathEditor(arrowPaths);
 
@@ -186,7 +187,7 @@ export function createPathTools({
                 segmentIndex: 0,
                 actionName: "forward",
                 segmentLength: newPath.moves[0][1],
-            })
+            });
 
             rebuild();
             onPathCollectionChange(pathEditor.getArrowPaths());
@@ -301,7 +302,7 @@ export function createPathTools({
         },
 
         shouldIgnoreClick() {
-            return originMarkers.isGizmoActive();
+            return shouldIgnoreSceneClick() || originMarkers.isGizmoActive();
         },
     });
 
@@ -496,6 +497,13 @@ export function createPathTools({
         pathControls.setViewportOriginNoticeVisible(hasViewportOrigins);
     }
 
+    function clearSelection() {
+        selectedOriginArrowName = null;
+        originMarkers.clearSelection();
+        pathEditor.setSelectedPathInfo(null);
+        syncSelection();
+    }
+
     function update() {
         lineTooltip.update();
     }
@@ -524,5 +532,6 @@ export function createPathTools({
         setPathVisibility,
         update,
         destroy,
+        clearSelection,
     };
 }

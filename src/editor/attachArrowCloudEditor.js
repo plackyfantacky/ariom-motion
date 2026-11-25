@@ -44,6 +44,10 @@ export function attachArrowCloudEditor(runtime, options = {}) {
         isSceneCameraLocked() {
             return runtime.cameraOrbit.isLocked();
         },
+
+        onSceneCameraEditingChange(isEditing) {
+            runtime.setCameraAnimationEnabled(!isEditing);
+        },
     });
 
     const unsubscribeFrame = runtime.onFrame((frame) => {

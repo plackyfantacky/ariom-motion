@@ -136,7 +136,7 @@ export function createArrowCloudEditor({
                 cameraControls.setCameraEditing(false);
             }
 
-            cameraController.setMode(cameraMode); 
+            cameraController.setMode(cameraMode);
             preferences.set("cameraMode", cameraController.getMode());
         },
 
@@ -168,6 +168,11 @@ export function createArrowCloudEditor({
             preferences.set("cameraUpVisible", isVisible);
         },
 
+        onCameraEditingChange(isEditing) {
+            setSceneCameraEditing(isEditing);
+            cameraControls.updateCameraModeButtons();
+        },
+
         onSceneCameraVisibilityChange(isVisible) {
             preferences.set("sceneCameraVisible", isVisible);
 
@@ -191,11 +196,6 @@ export function createArrowCloudEditor({
         onDomVisibilityChange(isVisible) {
             setDomVisible(isVisible);
             preferences.set("domVisible", isVisible);
-        },
-
-        onCameraMeshVisibilityChange(isVisible) {
-            cameraMesh.setVisible(isVisible);
-            preferences.set("cameraMeshVisible", isVisible);
         },
     });
 
@@ -245,6 +245,10 @@ export function createArrowCloudEditor({
 
         onOriginDragStateChange(isDragging) {
             cameraController.setInteractionEnabled(!isDragging);
+        },
+
+        shouldIgnoreSceneClick() {
+            return isEditingSceneCamera;
         },
     });
 
@@ -322,11 +326,6 @@ export function createArrowCloudEditor({
             sceneOriginMarker.visible = isVisible;
             preferences.set("sceneOriginVisible", isVisible);
         },
-
-        onCameraEditingChange(isEditing) {
-            setSceneCameraEditing(isEditing);
-            cameraControls.updateCameraModeButtons();
-        },
     });
 
     const buildInfo = createBuildInfo(sidebar, __ARROW_CLOUD_BUILD__);
@@ -392,7 +391,7 @@ export function createArrowCloudEditor({
             pathTools.clearSelection();
         }
 
-        cameraTransformControls.setEnabled(isEditing && !document.body.classList.contains("editor-ui-hidden"));
+        syncSceneCameraVisibility();
     }
 
     //exposed output functions
@@ -496,6 +495,8 @@ export function createArrowCloudEditor({
         sceneControls.destroy();
         buildInfo.destroy();
         pathTools.destroy();
+        cameraTransformControls.destroy();
+        onSceneCameraEditingChange(false);
         cameraController.destroy();
         cameraFrustumHelper.destroy();
         cameraMesh.destroy();
