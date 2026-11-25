@@ -16,6 +16,7 @@ export function createCameraControls({
     onCameraEditTargetChange = () => {},
     onCameraModeChange = () => {},
     onCameraTargetVisibilityChange = () => {},
+    onCameraTransformModeChange = () => {},
     onCameraUpVisibilityChange = () => {},
     onCameraViewChange = () => {},
     onCameraZoomChange = () => {},
@@ -49,6 +50,7 @@ export function createCameraControls({
     const cameraEditTargetInputs = [...controlsContainer.querySelectorAll("[data-camera-edit-target]")];
     const cameraModeButtons = [...controlsContainer.querySelectorAll("[data-camera-mode]")];
     const cameraTargetVisibilityInput = controlsContainer.querySelector("[data-camera-target-visible]");
+    const cameraTransformModeButtons = [...controlsContainer.querySelectorAll("[data-camera-transform-mode]")];
     const cameraUpVisibilityInput = controlsContainer.querySelector("[data-camera-up-visible]");
     const cameraViewButtons = [...controlsContainer.querySelectorAll("[data-camera-view]")];
     const copyCurrentViewportButton = controlsContainer.querySelector('[data-action="copy-current-viewport"]');
@@ -76,6 +78,10 @@ export function createCameraControls({
 
     cameraTargetVisibilityInput.addEventListener("change", () => {
         onCameraTargetVisibilityChange(cameraTargetVisibilityInput.checked);
+    });
+
+    cameraTransformModeButtons.forEach((button) => {
+        button.addEventListener("click", handleCameraTransformModeClick);
     });
 
     cameraUpVisibilityInput.addEventListener("change", () => {
@@ -136,9 +142,18 @@ export function createCameraControls({
     }
 
     function handleCameraEditTargetChange(event) {
-        if (event.target.checked) {
-            onCameraEditTargetChange(event.target.value);
+        if (!event.target.checked) {
+            return;
         }
+
+        onCameraEditTargetChange(event.target.value);
+
+        if (event.target.value === "target") {
+            cameraTransformMode = "translate";
+            onCameraTransformModeChange(cameraTransformMode);
+        }
+
+        updateCameraTransformModeButtons();
     }
 
     function setSceneCameraVisible(isVisible) {
@@ -148,17 +163,42 @@ export function createCameraControls({
         cameraEditTargetInputs.forEach((input) => {
             input.disabled = !isVisible;
         });
+        updateCameraTransformModeButtons();
     }
 
     function handleCameraEditingChange() {
         onCameraEditingChange(cameraEditingInput.checked);
+        updateCameraTransformModeButtons();
     }
 
     function setCameraEditing(isEditing) {
         cameraEditingInput.checked = isEditing;
+        updateCameraTransformModeButtons();
+    }
+
+    function updateCameraTransformModeButtons() {
+        const isTargetSelected = cameraEditTargetInputs.some((input) => {
+            return input.checked && input.value === "target";
+        });
+
+        cameraTransformModeButtons.forEach((button) => {
+            const mode = button.dataset.cameraTransformMode;
+
+            button.disabled = !cameraEditingInput.checked || !sceneCameraVisibilityInput.checked || (isTargetSelected && mode === "rotate");
+
+            button.setAttribute("aria-pressed", String(mode === cameraTransformMode));
+        });
+    }
+
+    function handleCameraTransformModeClick(event) {
+        cameraTransformMode = event.currentTarget.dataset.cameraTransformMode;
+
+        onCameraTransformModeChange(cameraTransformMode);
+        updateCameraTransformModeButtons();
     }
 
     /* runtime defaults */
+    let cameraTransformMode = "translate";
     zoomEnabledInput.checked = cameraZoomEnabled;
     domVisibilityInput.checked = domVisible;
 
@@ -185,6 +225,9 @@ export function createCameraControls({
             cameraEditingInput.removeEventListener("change", handleCameraEditingChange);
             cameraEditTargetInputs.forEach((input) => {
                 input.removeEventListener("change", handleCameraEditTargetChange);
+            });
+            cameraTransformModeButtons.forEach((button) => {
+                button.removeEventListener("click", handleCameraTransformModeClick);
             });
             domVisibilityInput.removeEventListener("change", handleDomVisibilityChange);
             sceneCameraVisibilityInput.removeEventListener("change", handleSceneCameraVisibilityChange);

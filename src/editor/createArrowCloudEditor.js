@@ -206,6 +206,10 @@ export function createArrowCloudEditor({
         onCameraEditTargetChange(target) {
             cameraTransformControls.setEditTarget(target);
         },
+
+        onCameraTransformModeChange(mode) {
+            cameraTransformControls.setTransformMode(mode);
+        },
     });
 
     if (initialCameraView) {

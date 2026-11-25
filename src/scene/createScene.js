@@ -64,7 +64,7 @@ export function createScene(mountElement, options = {}) {
 
     if (staticCamera) {
         camera.position.set(staticCamera.position.x, staticCamera.position.y, staticCamera.position.z);
-        camera.quaternion.set(staticCamera.quaternion.x, staticCamera.quaternion.y, staticCamera.quaternion.z, staticCamera.quaternion.w);
+        camera.quaternion.set(staticCamera.quaternion.x, staticCamera.quaternion.y, staticCamera.quaternion.z, staticCamera.quaternion.w).normalize();
         camera.up.set(staticCamera.up?.x ?? 0, staticCamera.up?.y ?? 1, staticCamera.up?.z ?? 0).normalize();
     } else {
         camera.position.set(0, 5, 12);
@@ -99,9 +99,9 @@ export function createScene(mountElement, options = {}) {
     const sequenceCameraPosition = new THREE.Vector3();
 
     // reusable camera orbit controls. for use in both editor and frontend modes.
-    const orbitTarget = staticCamera?.target
-        ? new THREE.Vector3(staticCamera.target.x, staticCamera.target.y, staticCamera.target.z)
-        : camera.position.clone().addScaledVector(camera.getWorldDirection(new THREE.Vector3()), 10);
+    const authoredTarget = staticCamera?.target ? new THREE.Vector3(staticCamera.target.x, staticCamera.target.y, staticCamera.target.z) : null;
+    const targetDistance = authoredTarget ? camera.position.distanceTo(authoredTarget) : 10;
+    const orbitTarget = camera.position.clone().addScaledVector(camera.getWorldDirection(new THREE.Vector3()), targetDistance);
 
     let orbitControls = createOrbitControls({
         camera,
