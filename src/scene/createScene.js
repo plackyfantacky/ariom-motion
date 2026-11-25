@@ -98,8 +98,6 @@ export function createScene(mountElement, options = {}) {
     let pendingCameraPose = null;
     let completedCameraPose = null;
 
-    let wasSceneOrbitEnabled = false;
-
     const cameraMovement = new THREE.Vector3();
     const sequenceCameraPosition = new THREE.Vector3();
 
@@ -390,27 +388,9 @@ export function createScene(mountElement, options = {}) {
 
         applyCameraSequencePose(deltaTime);
 
-        // if (orbitControls.enabled) {
-        //     orbitControls.update();
-        // }
-
-        const isSceneOrbitEnabled = orbitControls.enabled;
-
-        if (isSceneOrbitEnabled) {
-            const justEnabled = !wasSceneOrbitEnabled;
-
-            const previousQuaternion = justEnabled ? camera.quaternion.clone() : null;
-
+        if (orbitControls.enabled) {
             orbitControls.update();
-
-            if (justEnabled) {
-                const adjustment = THREE.MathUtils.radToDeg(previousQuaternion.angleTo(camera.quaternion));
-
-                console.log("Orbit activation adjustment:", adjustment, "degrees");
-            }
         }
-
-        wasSceneOrbitEnabled = isSceneOrbitEnabled;
 
         updateArrowAnimations({
             renderedArrowItems,

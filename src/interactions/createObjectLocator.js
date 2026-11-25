@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export function createObjectLocator(scene, camera, element) {
+export function createObjectLocator(scene, cameraSource, element) {
     const raycaster = new THREE.Raycaster();
     const pointerPosition = new THREE.Vector2();
     const vertex = new THREE.Vector3();
